@@ -1,11 +1,10 @@
 import TelegramBot, { Message } from 'node-telegram-bot-api';
-import express, { Request, Response } from 'express';
-import cors from 'cors';
+import { Request, Response } from 'express';
 import fs from 'fs'
 import { welcome } from './commands/welcome';
 import { generatePuzzle } from './commands/puzzle';
 import { connectDb, solConnection, TELEGRAM_ACCESS_TOKEN } from './config';
-import { addNewWallet, buyAmount, getUser, getUserCacheById, getUserPubKey, getUserSecretKey, closeAllLimitOrders, sellAmount, updateUser, verify, verifyUser } from './controllers/user';
+import { addNewWallet, buyAmount, getUser, getUserCacheById, getUserPubKey, getUserSecretKey, sellAmount, updateUser, verify, verifyUser } from './controllers/user';
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import base58 from 'bs58'
 import { convertToMilliseconds, getTokenAccountBalance, updateData, verifyDurationString } from './utils';
@@ -14,23 +13,15 @@ import { generateTwapCommands } from './commands/twap';
 
 import { buyClick } from './messages/buy';
 import { sellClick } from './messages/sell';
-import { getDCABuyKeyBoard, getLimitBuyKeyBoard, getSwapBuyKeyBoard } from './keyboards/buy';
-import { limitOrderClick } from './messages/limitOrders';
-import { createDCAOrder, createLimitBuyOrder } from './controllers/buy';
+import { getSwapBuyKeyBoard } from './keyboards/buy';
 
-import { dcaOrder, dcaSellOrder, limitBuyOrder, limitSellOrder } from './utils/trade';
-import { DCAOrderClick } from './messages/dcsOrders';
 import { getMyTokens } from './utils/token';
 import { BUY_SUCCESS_MSG, ORDER_SUCCESS_MSG, SELL_SUCCESS_MSG } from './constants/msg.constants';
 import { walletClick } from './messages/wallet';
-import { getDCASellKeyBoard, getLimitSellKeyBoard, getSwapSellKeyBoard } from './keyboards/sell';
-import { createLimitSellOrder } from './controllers/sell';
+import { getSwapSellKeyBoard } from './keyboards/sell';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { generateSettingCommands } from './commands/setting';
 import { getSettingKeyboard } from './keyboards/setting';
-import BotRouter from './routes/BotRoute';
-import { snipeClick } from './messages/snipe';
-import { getSnipeKeyBoard } from './keyboards/snipe';
 
 const token: string = TELEGRAM_ACCESS_TOKEN
 const path = './user.json';
@@ -41,33 +32,6 @@ if (bot) {
   console.log("Telegram bot is running")
 }
 
-const app = express();
-const port = 7123;
-const whitelist = ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "*", 'https://valaichat.shicat.xyz'];
-
-const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-};
-
-app.use(express.json());
-app.use(cors(corsOptions));
-
-// app.listen(port, () => {
-//   console.log(`Server running at http://localhost:${port}`);
-// });
-
-app.get('/', (req: Request, res: Response) => {
-  res.json("running api-valaichat.shicat.xyz");
-});
-
-
-app.use('/bot', BotRouter);
 
 bot.on('message', async (msg: Message) => {
   const chatId = msg.chat.id;
@@ -80,15 +44,6 @@ bot.on('message', async (msg: Message) => {
     name: name,
     username: username
   })
-
-
-  // await registerUser(userId.toString())
-  // const users: number[] = await readJson()
-
-  // const isVerified: boolean = await verifyUser(userId.toString(), {
-  //   name: name,
-  //   username: username
-  // })
 
   if (!isVerified) {
     if (msg.text === '/verify') return;
@@ -632,7 +587,6 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
 
     else responseText = '❌ Wrong!!!';
 
-    // Answer the callback query (to remove the loading spinner on the user's end)
     bot.answerCallbackQuery(callbackQuery.id);
   } catch (err) {
     console.log("err", err)
