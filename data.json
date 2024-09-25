@@ -1,0 +1,37 @@
+{
+  "245220167": {
+    "activeWallet": 0
+  },
+  "1535497198": {
+    "activeWallet": 0
+  },
+  "5807344963": {
+    "activeWallet": 0,
+    "activeBuyMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump",
+    "activeBuySwapSolAmount": 0.001,
+    "isAutoBuyEnabled": false,
+    "activeSellMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump"
+  },
+  "6711635948": {
+    "activeWallet": 0
+  },
+  "6032811055": {
+    "activeWallet": 0
+  },
+  "5554796945": {
+    "activeWallet": 0
+  },
+  "7384192158": {
+    "activeWallet": 0
+  },
+  "7054192592": {
+    "activeWallet": 0
+  },
+  "5079213266": {
+    "activeWallet": 0,
+    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+    "activeBuySwapSolAmount": 0.1,
+    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+    "activeSellSwapPercent": 100
+  }
+}
