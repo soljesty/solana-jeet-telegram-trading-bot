@@ -10,31 +10,40 @@ import { fetchImage } from ".";
 import axios from "axios";
 
 export async function getTokenData(mint: string): Promise<TokenMetadata> {
-  const metaplex = Metaplex.make(solConnection);
+  try {
+    const metaplex = Metaplex.make(solConnection);
 
-  const mintAddress = new PublicKey(mint);
+    const mintAddress = new PublicKey(mint);
 
-  let tokenName;
-  let tokenSymbol;
-  let tokenLogo;
+    let tokenName;
+    let tokenSymbol;
+    let tokenLogo;
 
-  const metadataAccount = metaplex
-    .nfts()
-    .pdas()
-    .metadata({ mint: mintAddress });
+    const metadataAccount = metaplex
+      .nfts()
+      .pdas()
+      .metadata({ mint: mintAddress });
 
-  const metadataAccountInfo = await solConnection.getAccountInfo(metadataAccount);
+    const metadataAccountInfo = await solConnection.getAccountInfo(metadataAccount);
 
-  if (metadataAccountInfo) {
-    const token: any = await metaplex.nfts().findByMint({ mintAddress: mintAddress });
-    tokenName = token.name;
-    tokenSymbol = token.symbol;
-    // tokenLogo = token.json.image? token.json.image: "";
-  }
-  return {
-    name: tokenName,
-    symbol: tokenSymbol,
-    // uri: tokenLogo
+    if (metadataAccountInfo) {
+      const token: any = await metaplex.nfts().findByMint({ mintAddress: mintAddress });
+      tokenName = token.name;
+      tokenSymbol = token.symbol;
+      // tokenLogo = token.json.image? token.json.image: "";
+    }
+    return {
+      name: tokenName,
+      symbol: tokenSymbol,
+      // uri: tokenLogo
+    }
+  } catch (e) {
+    console.log(e)
+    return {
+      name: '',
+      symbol: '',
+      // uri: tokenLogo
+    }
   }
 }
 
@@ -104,7 +113,7 @@ export const getMyTokens = async (walletPubKey: PublicKey) => {
         return null;
       }
 
-      
+
       // const res = await axios.get(`https://price.jup.ag/v6/price?ids=${walletPubKey.toBase58()}&vsToken=So11111111111111111111111111111111111111112`)
 
       // console.log("res------------------------>", res.data.data)
@@ -116,13 +125,13 @@ export const getMyTokens = async (walletPubKey: PublicKey) => {
       }
       const data: any = await response.json();
 
-      if(Object.keys(data.data).length === 0){
+      if (Object.keys(data.data).length === 0) {
         price = 0;
-      }else{
+      } else {
         // console.log("haha", data.data[mintAddress.toBase58()].price)
         price = data.data[mintAddress.toBase58()].price;
       }
-      
+
 
       // console.log({
       //   mintAddress: accountInfo.mint.toBase58(),

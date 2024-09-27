@@ -1,32 +1,32 @@
 import TelegramBot, { Message } from 'node-telegram-bot-api';
-import { Request, Response } from 'express';
 import fs from 'fs'
 import { welcome } from './commands/welcome';
 import { generatePuzzle } from './commands/puzzle';
-import { connectDb, solConnection, TELEGRAM_ACCESS_TOKEN } from './config';
+import { connectDb, TELEGRAM_ACCESS_TOKEN } from './config';
 import { addNewWallet, buyAmount, getUser, getUserCacheById, getUserPubKey, getUserSecretKey, sellAmount, updateUser, verify, verifyUser } from './controllers/user';
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import base58 from 'bs58'
-import { convertToMilliseconds, getTokenAccountBalance, updateData, verifyDurationString } from './utils';
+import { addProfitMaxItem, removeProfitMaxItem, updateData } from './utils';
 import { generatePriKeyConfirmCommands, generateResetConfirmCommands, generateWalletCommands } from './commands/wallet';
-import { generateTwapCommands } from './commands/twap';
 
 import { buyClick } from './messages/buy';
 import { sellClick } from './messages/sell';
 import { getSwapBuyKeyBoard } from './keyboards/buy';
 
-import { getMyTokens } from './utils/token';
-import { BUY_SUCCESS_MSG, ORDER_SUCCESS_MSG, SELL_SUCCESS_MSG } from './constants/msg.constants';
+import { getMyTokens, getTokenData } from './utils/token';
+import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from './constants/msg.constants';
 import { walletClick } from './messages/wallet';
 import { getSwapSellKeyBoard } from './keyboards/sell';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { generateSettingCommands } from './commands/setting';
 import { getSettingKeyboard } from './keyboards/setting';
+import { getProfitMaxConfig } from './commands/profitMax';
+import { commandList } from './constants';
 
 const token: string = TELEGRAM_ACCESS_TOKEN
-const path = './user.json';
 connectDb()
 export const bot = new TelegramBot(token, { polling: true });
+
+bot.setMyCommands(commandList)
 
 if (bot) {
   console.log("Telegram bot is running")
@@ -104,15 +104,6 @@ bot.onText(/\/buy/, async (msg: Message) => {
   }
 });
 
-bot.onText(/\/snipe/, async (msg: Message) => {
-  const chatId = msg.chat.id
-  if (!await verify(msg)) {
-    return;
-  } else {
-    await snipeClick(bot, chatId)
-  }
-});
-
 // go to sell commands
 bot.onText(/\/sell/, async (msg: Message) => {
   const chatId = msg.chat.id
@@ -135,7 +126,7 @@ bot.onText(/\/wallet/, async (msg: Message) => {
         await walletClick(bot, pubKey, chatId) //
       }
     }
-   
+
   } catch (err) {
 
   }
@@ -247,8 +238,115 @@ bot.on('callback_query', async (callbackQuery) => {
         }, parse_mode: 'HTML'
       });
     }
+
     if (data === 'Cancel') {
       bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: chatId, message_id: messageId });
+    }
+
+    if (data === 'Delete') {
+      bot.deleteMessage(chatId, messageId);
+    }
+
+    /******************************************************************/
+    /*************************** Swap Buy *****************************/
+    /******************************************************************/
+    if (data === 'Profit') {
+      const { title, content } = await getProfitMaxConfig(chatId)
+      bot.sendMessage(chatId, title, {
+        "reply_markup": {
+          "inline_keyboard": content
+        }, parse_mode: 'HTML'
+      });
+    }
+
+    if (data === 'Remove_Profit') {
+      bot.sendMessage(chatId, "Enter a token address to remove", {
+        parse_mode: "HTML",
+      });
+
+      bot.once("message", async (msg: any) => {
+        if (!msg.text) return;
+        const address = msg.text;
+
+        try {
+          const { success, message } = await removeProfitMaxItem(address, chatId)
+          bot.sendMessage(chatId, success == true ? `Successfully Removed. ${message}` : `Removed failed. ${message}`, {
+            parse_mode: "HTML",
+          })
+        } catch (err) {
+          bot.sendMessage(
+            chatId,
+            "Token Address is not Valid... Try with another token!!",
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "Try Again", callback_data: "Add_Profit" },
+                    { text: "Cancel", callback_data: "Delete" },
+                  ],
+                ],
+              },
+              parse_mode: "HTML",
+            }
+          );
+        }
+      });
+    }
+
+    if (data === 'Add_Profit') {
+      bot.sendMessage(chatId, "Enter a token address to add", {
+        parse_mode: "HTML",
+      });
+
+      bot.once("message", async (msg: any) => {
+        if (!msg.text) return;
+        const address = msg.text;
+
+        try {
+          const isValid: boolean = PublicKey.isOnCurve(new PublicKey(address));
+          console.log("isValid", isValid);
+          const { name, symbol } = await getTokenData(address)
+          console.log("metadata", name, symbol);
+          if (!!name && !!symbol) {
+            const { success, message } = await addProfitMaxItem(address, name, symbol, chatId)
+            bot.sendMessage(chatId, success == true ? `Successfully Added. ${message}` : `Added failed. ${message}`, {
+              parse_mode: "HTML",
+            })
+          } else {
+            bot.sendMessage(
+              chatId,
+              "Token Address is not Valid... Try with another token!!",
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      { text: "Try Again", callback_data: "Add_Profit" },
+                      { text: "Cancel", callback_data: "Delete" },
+                    ],
+                  ],
+                },
+                parse_mode: "HTML",
+              }
+            );
+          }
+        } catch (err) {
+          bot.sendMessage(
+            chatId,
+            "Token Address is not Valid... Try with another token!!",
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "Try Again", callback_data: "Add_Profit" },
+                    { text: "Cancel", callback_data: "Delete" },
+                  ],
+                ],
+              },
+              parse_mode: "HTML",
+            }
+          );
+        }
+      });
     }
 
     // confirm showing privatekey
@@ -574,7 +672,7 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
         }
       })
     }
-    
+
     if (data?.includes("TgWallet_")) {
       const str_arr = data.split("_")
       const newActiveId = Number(str_arr[1])

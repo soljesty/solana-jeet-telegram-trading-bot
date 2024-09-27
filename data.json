@@ -33,5 +33,9 @@
     "activeBuySwapSolAmount": 0.1,
     "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
     "activeSellSwapPercent": 100
+  },
+  "6381452440": {
+    "activeWallet": 0,
+    "profitMaxList": []
   }
 }

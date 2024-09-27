@@ -25,19 +25,12 @@ For more info on your wallet and to retrieve your private key, tap the wallet bu
       { text: 'Buy', callback_data: 'Buy' },
       { text: 'Sell', callback_data: 'Sell' },
     ],
-    // [
-    //   { text: 'Limit Orders', callback_data: 'Limit_Orders' },
-    //   { text: 'TWAP(DCA Orders)', callback_data: 'DCA_Orders' },
-    //   { text: 'Snipe', callback_data: 'Snipe' },
-    // ],
-    // [
-    //   { text: 'Help', callback_data: 'Help' },
-    //   { text: 'Refer friends', callback_data: 'ReferFriends' },
-    //   { text: 'Alerts', callback_data: 'Alerts' },
-    // ],
     [
       { text: 'Wallet', callback_data: 'Wallet' },
       { text: 'Settings', callback_data: 'Setting_Dashboard' },
+    ],
+    [
+      { text: 'Profit Max Mode Configuration', callback_data: 'Profit' },
     ],
     [
       { text: 'Pin', callback_data: 'Pin' },
