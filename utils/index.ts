@@ -172,6 +172,50 @@ export async function updateData(key: string, updates: any): Promise<UpdateResul
   }
 }
 
+export async function addProfitMaxItem(address: string, name: string, symbol: string, key: number) {
+  const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+  if (data[key]) {
+    if ('profitMaxList' in data[key]) {
+      const isDuplicate = data[key]['profitMaxList'].some((item: any) => item.address === address);
+      if (isDuplicate) {
+        return { success: false, message: `Address <code>${address}</code> is already exist.` };
+      } else {
+        data[key]['profitMaxList'].push({ address, name, symbol })
+        fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf8');
+        return { success: true, message: `Address <code>${address}</code> has been added.` };
+      }
+    } else {
+      data[key]['profitMaxList'] = [{
+        address, name, symbol
+      }];
+      fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf8');
+      return { success: true, message: `Address <code>${address}</code> has been added.` };
+    }
+  } else {
+    return { success: false, message: `You are not registered.` };
+  }
+}
+
+export async function removeProfitMaxItem(address: string, key: number) {
+  const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+  if (data[key]) {
+    if ('profitMaxList' in data[key]) {
+      const isExist = data[key]['profitMaxList'].some((item: any) => item.address === address);
+      if (!isExist) {
+        return { success: false, message: `Address <code>${address}</code> has not exist` };
+      } else {
+        data[key].profitMaxList = data[key].profitMaxList.filter((item: any) => item.address !== address);
+        fs.writeFileSync('data.json', JSON.stringify(data, null, 2), 'utf8');
+        return { success: true, message: `Address <code>${address}</code> has been removed.` };
+      }
+    } else {
+      return { success: false, message: `Address <code>${address}</code> has not exist.` };
+    }
+  } else {
+    return { success: false, message: `You are not registered.` };
+  }
+}
+
 export const sleep = async (ms: number) => {
   await new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -216,7 +260,7 @@ export function getRemainTime(diff: number) {
   }
 }
 
-export const verifyDurationString= (input: string) => {
+export const verifyDurationString = (input: string) => {
   // Extract the numeric part and the time unit part using regex
   const regex = /^(\d+)([smhd])$/;
   const match = input.match(regex);
