@@ -1,4 +1,3 @@
-import { UserCache } from "../config";
 import { getUserCacheById } from "../controllers/user";
 
 export const getSwapSellKeyBoard = async (userId: string) => {

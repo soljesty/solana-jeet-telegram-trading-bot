@@ -7,10 +7,13 @@
   },
   "5807344963": {
     "activeWallet": 0,
-    "activeBuyMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump",
-    "activeBuySwapSolAmount": 0.001,
+    "activeBuyMint": "Ek81YYpoowq26kYMURPsUbgg5vB4c654rgraJfympump",
+    "activeBuySwapSolAmount": 3,
     "isAutoBuyEnabled": false,
-    "activeSellMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump"
+    "activeSellMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump",
+    "sellSlippage": 5,
+    "buySlippage": 5,
+    "autoBuyAmount": 0.01
   },
   "6711635948": {
     "activeWallet": 0

@@ -455,6 +455,8 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
     if (data === 'SWAP_BUY_X') {
       bot.sendMessage(chatId, "Enter the sol amount for buy", { parse_mode: 'HTML' });
       bot.once('message', async (msg: Message) => {
+        const user_cache = await getUserCacheById(chatId.toString())
+        if(user_cache.activeBuySwapSolAmount === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
           activeBuySwapSolAmount: Number(msg.text)
         })
@@ -581,8 +583,10 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
       }
     }
     if (data === 'SwapSell_X') {
+      const user_cache = await getUserCacheById(chatId.toString())
       bot.sendMessage(chatId, "Enter the sol amount for sell", { parse_mode: 'HTML' });
       bot.once('message', async (msg: Message) => {
+        if(user_cache.activeSellSwapPercent === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
           activeSellSwapPercent: Number(msg.text)
         })
@@ -639,8 +643,10 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
     }
 
     if (data === 'AutoBuy_Amount') {
+      const user_cache = await getUserCacheById(chatId.toString())
       bot.sendMessage(chatId, "Enter the sol amount for auto buy", { parse_mode: 'HTML' });
       bot.once('message', async (msg: Message) => {
+        if(user_cache.autoBuyAmount === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
           autoBuyAmount: Number(msg.text)
         })
@@ -649,10 +655,12 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
         }
       })
     }
+
     if (data === 'Buy_Slippage') {
-      console.log("calling Buy_Slippage...")
+      const user_cache = await getUserCacheById(chatId.toString())
       bot.sendMessage(chatId, "Enter the slippage amount for buy", { parse_mode: 'HTML' });
       bot.once('message', async (msg: Message) => {
+        if(user_cache.buySlippage === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
           buySlippage: Number(msg.text)
         })
@@ -662,8 +670,11 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
       })
     }
     if (data === 'Sell_Slippage') {
+      const user_cache = await getUserCacheById(chatId.toString())
+
       bot.sendMessage(chatId, "Enter the slippage amount for buy", { parse_mode: 'HTML' });
       bot.once('message', async (msg: Message) => {
+        if(user_cache.sellSlippage === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
           sellSlippage: Number(msg.text)
         })
