@@ -29,17 +29,7 @@ export const getSettingKeyboard = async (userId: string) => {
       {
         text: `✏️ Sell ${user_cache.sellSlippage ? user_cache.sellSlippage : '-'} %`, callback_data: `Sell_Slippage`
       },
-    ],
-    [
-      {
-        text: `===== SNIPE TRADE AMOUNT =====`, callback_data: 'cc'
-      }
-    ],
-    [
-      {
-        text: `✏️ ${user_cache.snipeAmount ? user_cache.snipeAmount : '-'}`, callback_data: `Set_SnipeAmount`
-      }
-    ],
+    ]
   ]
   return keyboard;
 }

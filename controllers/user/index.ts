@@ -155,16 +155,12 @@ export const getUserPubKey = async (userId: string) => {
   }
 };
 
-
-
-
 export const getUserCacheById = async (userId: string) => {
   const data: any = await readDataJson()
   return data[userId]
 }
 
 export const buyAmount = async (buyAmount: number, userId: string, kp: Keypair, isAmountSpecific?: boolean) => {
-
   const userCache: IUserCache = await getUserCacheById(userId)
   return await buyWithJupiter(
     kp,
@@ -192,34 +188,7 @@ export const sellAmount = async (sellPercent: number, userId: string, kp: Keypai
   )
 }
 
-export const getLimitOrdersByUserId = async (userId: string) => {
-  const limits = await LimitOrderModel.find({ userId })
-  console.log("limits", limits)
-  return limits;
-}
-
-export const getDCAOrdersByUserId = async (userId: string) => {
-  const dcas = await DCAOrderModel.find({ userId: userId, expiredAt: { $gt: Date.now() } })
-  console.log("dcas", dcas)
-  return dcas;
-}
-
 export const getWalletsByUserId = async (userId: string) => {
   const user: any = await UserModel.findOne({ userId });
   return user.walletAddress
 }
-
-export const closeAllLimitOrders = async (userId: string): Promise<boolean> => {
-  try {
-    const result = await LimitOrderModel.deleteMany({ userId });
-    if (result) {
-      console.log(`Deleted ${result.deletedCount} documents.`);
-      return true;
-    } else {
-      return false
-    }
-  } catch (error) {
-    console.error('Error deleting documents:', error);
-    return false;
-  }
-};
