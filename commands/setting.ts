@@ -1,8 +1,6 @@
-import { getUserCacheById } from "../controllers/user"
 import { getSettingKeyboard } from "../keyboards/setting"
 
 export const generateSettingCommands = async (userId: string) => {
-  const user_cache = await getUserCacheById(userId)
   const setting_title = `
 <b>Settings:</b>
 

@@ -1,184 +1,213 @@
-import TelegramBot, { Message } from 'node-telegram-bot-api';
-import fs from 'fs'
-import { welcome } from './commands/welcome';
-import { generatePuzzle } from './commands/puzzle';
-import { connectDb, TELEGRAM_ACCESS_TOKEN } from './config';
-import { addNewWallet, buyAmount, getUser, getUserCacheById, getUserPubKey, getUserSecretKey, sellAmount, updateUser, verify, verifyUser } from './controllers/user';
-import { Keypair, PublicKey } from '@solana/web3.js';
-import base58 from 'bs58'
-import { addProfitMaxItem, removeProfitMaxItem, updateData } from './utils';
-import { generatePriKeyConfirmCommands, generateResetConfirmCommands, generateWalletCommands } from './commands/wallet';
+import TelegramBot, { Message } from "node-telegram-bot-api";
+import fs from "fs";
+import { welcome } from "./commands/welcome";
+import {
+  connectDb,
+  SECRET_KEY,
+  solConnection,
+  TELEGRAM_ACCESS_TOKEN,
+} from "./config";
+import { buyAmount, getUserCacheById, sellAmount } from "./controllers/user";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import base58 from "bs58";
+import {
+  addProfitMaxItem,
+  isVariableExisting,
+  removeProfitMaxItem,
+  updateData,
+} from "./utils";
+import {
+  generatePriKeyConfirmCommands,
+  generateResetConfirmCommands,
+  generateWalletCommands,
+} from "./commands/wallet";
 
-import { buyClick } from './messages/buy';
-import { sellClick } from './messages/sell';
-import { getSwapBuyKeyBoard } from './keyboards/buy';
+import { buyClick } from "./messages/buy";
+import { sellClick } from "./messages/sell";
+import { getSwapBuyKeyBoard } from "./keyboards/buy";
 
-import { getMyTokens, getTokenData } from './utils/token';
-import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from './constants/msg.constants';
-import { walletClick } from './messages/wallet';
-import { getSwapSellKeyBoard } from './keyboards/sell';
-import { generateSettingCommands } from './commands/setting';
-import { getSettingKeyboard } from './keyboards/setting';
-import { getProfitMaxConfig } from './commands/profitMax';
-import { commandList } from './constants';
+import { getMyTokens, getTokenData } from "./utils/token";
+import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from "./constants/msg.constants";
+import { walletClick } from "./messages/wallet";
+import { getSwapSellKeyBoard } from "./keyboards/sell";
+import { generateSettingCommands } from "./commands/setting";
+import { getSettingKeyboard } from "./keyboards/setting";
+import { getProfitMaxConfig } from "./commands/profitMax";
+import { commandList } from "./constants";
+import {
+  LIQUIDITY_STATE_LAYOUT_V4,
+  MAINNET_PROGRAM_ID,
+  Token,
+} from "@raydium-io/raydium-sdk";
 
-const token: string = TELEGRAM_ACCESS_TOKEN
-connectDb()
+const token: string = TELEGRAM_ACCESS_TOKEN;
+
 export const bot = new TelegramBot(token, { polling: true });
 
-bot.setMyCommands(commandList)
+bot.setMyCommands(commandList);
 
 if (bot) {
-  console.log("Telegram bot is running")
+  console.log("Telegram bot is running");
 }
 
-
-bot.on('message', async (msg: Message) => {
+bot.on("message", async (msg: Message) => {
   const chatId = msg.chat.id;
   const name = msg.chat.first_name;
   const username = msg.chat.username;
   const userId = msg.from?.id;
 
   if (!userId) return;
-  const isVerified: boolean = await verifyUser(userId.toString(), {
-    name: name,
-    username: username
-  })
-
-  if (!isVerified) {
-    if (msg.text === '/verify') return;
-    bot.sendMessage(chatId, "⛔ You are not authorized. You must verify by using /verify command");
-    return;
-  }
 });
 
 // home commands
 bot.onText(/\/home/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id
-    const pubKey: any = await getUserPubKey(chatId.toString())
-    const { title, content } = await welcome(pubKey)
-    if (!await verify(msg)) {
-      return;
-    } else {
-      // console.log(msg);
-      bot.sendMessage(msg.chat.id, title, {
-        "reply_markup": {
-          "inline_keyboard": content
-        }, parse_mode: 'HTML'
-      });
-    }
-  } catch (err) {
+    const chatId = msg.chat.id;
+    const secretKey: any = SECRET_KEY;
+    const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
+    const pubKey = kp.publicKey.toBase58();
+    const { title, content } = await welcome(pubKey);
+    bot.sendMessage(msg.chat.id, title, {
+      reply_markup: {
+        inline_keyboard: content,
+      },
+      parse_mode: "HTML",
+    });
+  } catch (err) {}
+});
 
-  }
+// test
+bot.onText(/\/test/, async (msg: Message) => {
+  try {
+    const chatId = msg.chat.id;
+    console.log("testing...");
+    const RAYDIUM_LIQUIDITY_PROGRAM_ID_V4 = MAINNET_PROGRAM_ID.AmmV4;
+
+    const OPENBOOK_PROGRAM_ID = MAINNET_PROGRAM_ID.OPENBOOK_MARKET;
+    let quoteToken: Token;
+    quoteToken = Token.WSOL;
+
+    const raydiumSubscriptionId = solConnection.onProgramAccountChange(
+      RAYDIUM_LIQUIDITY_PROGRAM_ID_V4,
+      async (updatedAccountInfo) => {
+        // console.log("updatedAccountInfo", updatedAccountInfo)
+        const key = updatedAccountInfo.accountId.toString();
+        const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(
+          updatedAccountInfo.accountInfo.data
+        );
+        // console.log("key", key)
+        // console.log("poolState", poolState)
+        // console.log("baseIn", poolState.swapBaseInAmount.toString())
+        // console.log("quoteIn", poolState.swapQuoteInAmount.toString())
+        if (key === "GDH7pcSnQoALwnNQxGaCCHtLDoUK6LYRnfVSZuqRiqCE") {
+          console.log("baseMint", poolState.baseMint.toBase58());
+          // console.log("poolState", poolState)
+        }
+
+        //
+
+        // if(poolState.baseMint.toBase58() === 'Ek81YYpoowq26kYMURPsUbgg5vB4c654rgraJfympump'){
+        // console.log("baseMint", poolState.baseMint.toBase58())
+        // }
+        const poolOpenTime = parseInt(poolState.poolOpenTime.toString());
+        // const existing = existingLiquidityPools.has(key)
+
+        // if (poolOpenTime > runTimestamp && !existing) {
+        //   existingLiquidityPools.add(key)
+        //   const _ = processRaydiumPool(updatedAccountInfo.accountId, poolState)
+        //   poolId = updatedAccountInfo.accountId
+        // }
+      },
+      "confirmed",
+      [
+        { dataSize: LIQUIDITY_STATE_LAYOUT_V4.span },
+        {
+          memcmp: {
+            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("quoteMint"),
+            bytes: quoteToken.mint.toBase58(),
+          },
+        },
+        {
+          memcmp: {
+            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("marketProgramId"),
+            bytes: OPENBOOK_PROGRAM_ID.toBase58(),
+          },
+        },
+        {
+          memcmp: {
+            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("status"),
+            bytes: base58.encode([6, 0, 0, 0, 0, 0, 0, 0]),
+          },
+        },
+      ]
+    );
+  } catch (err) {}
 });
 
 // start commands
 bot.onText(/\/start/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id
-    const pubKey: any = await getUserPubKey(chatId.toString())
-    const { title, content } = await welcome(pubKey)
-    if (!await verify(msg)) {
-      return;
-    } else {
-      // console.log(msg);
-      bot.sendMessage(msg.chat.id, title, {
-        "reply_markup": {
-          "inline_keyboard": content
-        }, parse_mode: 'HTML'
-      });
-    }
-  } catch (err) {
-
-  }
+    const chatId = msg.chat.id;
+    const secretKey: any = SECRET_KEY;
+    const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
+    const pubKey = kp.publicKey.toBase58();
+    const { title, content } = await welcome(pubKey);
+    bot.sendMessage(msg.chat.id, title, {
+      reply_markup: {
+        inline_keyboard: content,
+      },
+      parse_mode: "HTML",
+    });
+  } catch (err) {}
 });
 
 // go to buy commands
 bot.onText(/\/buy/, async (msg: Message) => {
-  const chatId = msg.chat.id
-  if (!await verify(msg)) {
-    return;
-  } else {
-    await buyClick(bot, chatId)
-  }
+  const chatId = msg.chat.id;
+  await buyClick(bot, chatId);
 });
 
 // go to sell commands
 bot.onText(/\/sell/, async (msg: Message) => {
-  const chatId = msg.chat.id
-  if (!await verify(msg)) {
-    return;
-  } else {
-    await sellClick(bot, chatId)
-  }
+  const chatId = msg.chat.id;
+  await sellClick(bot, chatId);
 });
 
 // go to wallet commands
 bot.onText(/\/wallet/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id
-    if (!await verify(msg)) {
-      return;
-    } else {
-      const pubKey = await getUserPubKey(chatId.toString())
-      if (pubKey) {
-        await walletClick(bot, pubKey, chatId) //
-      }
-    }
+    const chatId = msg.chat.id;
 
-  } catch (err) {
-
-  }
+    await walletClick(bot, chatId); //
+  } catch (err) {}
 });
 
 // go to setting commands
 bot.onText(/\/settings/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id
-    if (!await verify(msg)) {
-      return;
-    } else {
-      const { setting_title, setting_content } = await generateSettingCommands(chatId.toString())
-      bot.sendMessage(chatId, setting_title, {
-        "reply_markup": {
-          "inline_keyboard": setting_content
-        }, parse_mode: 'HTML'
-      });
-    }
-  } catch (err) {
-
-  }
+    const chatId = msg.chat.id;
+    const { setting_title, setting_content } = await generateSettingCommands(
+      chatId.toString()
+    );
+    bot.sendMessage(chatId, setting_title, {
+      reply_markup: {
+        inline_keyboard: setting_content,
+      },
+      parse_mode: "HTML",
+    });
+  } catch (err) {}
 });
 
 // go to auto buy commands
 bot.onText(/\/autobuy/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id
-    if (!await verify(msg)) {
-      return;
-    } else {
-      await buyClick(bot, chatId)
-    }
-  } catch (err) {
-
-  }
+    const chatId = msg.chat.id;
+    await buyClick(bot, chatId);
+  } catch (err) {}
 });
-
-bot.onText(/\/verify/, async (msg: Message) => {
-  const { title, content } = await generatePuzzle() //
-
-  console.log(msg);
-  bot.sendMessage(msg.chat.id, title, {
-    "reply_markup": {
-      "inline_keyboard": content
-    }, parse_mode: 'HTML'
-  });
-});
-
 
 // Listen for callback queries
-bot.on('callback_query', async (callbackQuery) => {
+bot.on("callback_query", async (callbackQuery) => {
   try {
     const message = callbackQuery.message;
 
@@ -186,80 +215,74 @@ bot.on('callback_query', async (callbackQuery) => {
     const data = callbackQuery.data;
 
     // Log the clicked button data
-    console.log('Button clicked:', data);
-    const userId: number | undefined = message.from?.id
-    const chatId: number | undefined = message.chat?.id
+    console.log("Button clicked:", data);
+    const userId: number | undefined = message.from?.id;
+    const chatId: number | undefined = message.chat?.id;
     const messageId = message.message_id;
     const name = message.chat.first_name;
     const username = message.chat.username;
     if (!userId) return;
 
-    let responseText = '';
-    const pubKey = await getUserPubKey(chatId.toString())
-    console.log("pubKey", pubKey)
-    const secretKey: any = await getUserSecretKey(chatId.toString())
-    const kp: any = Keypair.fromSecretKey(base58.decode(secretKey))
-    if (data === 'Pear') {
-      responseText = '✅ You are verified';
-      const keypair = Keypair.generate()
-      updateUser(chatId.toString(), {
-        isVerified: true,
-        name: name,
-        username: username,
-        walletAddress: base58.encode(keypair.secretKey)
-      })
+    let responseText = "";
+    const secretKey: any = SECRET_KEY;
+    const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
+    const pubKey = kp.publicKey.toBase58();
 
-      bot.sendMessage(chatId, responseText, { parse_mode: 'HTML' });
-    }
     /******************************************************************/
     /*************************** Wallet Management ********************/
     /******************************************************************/
     // go wallet
-    if (data === 'Wallet') {
+    if (data === "Wallet") {
       if (pubKey) {
-        await walletClick(bot, pubKey, chatId)
+        await walletClick(bot, chatId);
       }
     }
 
     // deposit sol
-    if (data === 'Deposit_SOL') {
+    if (data === "Deposit_SOL") {
       responseText = `To deposit send SOL to below address: 
     <code>${pubKey}</code>
-    `
-      bot.sendMessage(chatId, responseText, { parse_mode: 'HTML' });
+    `;
+      bot.sendMessage(chatId, responseText, { parse_mode: "HTML" });
     }
 
     // export privatekey
-    if (data === 'Export_PrivateKey') {
-      const { export_pri_title, export_pri_content } = await generatePriKeyConfirmCommands()
+    if (data === "Export_PrivateKey") {
+      const { export_pri_title, export_pri_content } =
+        await generatePriKeyConfirmCommands();
       bot.sendMessage(chatId, export_pri_title, {
-        "reply_markup": {
-          "inline_keyboard": export_pri_content
-        }, parse_mode: 'HTML'
+        reply_markup: {
+          inline_keyboard: export_pri_content,
+        },
+        parse_mode: "HTML",
       });
     }
 
-    if (data === 'Cancel') {
-      bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: chatId, message_id: messageId });
+    if (data === "Cancel") {
+      bot.editMessageReplyMarkup(
+        { inline_keyboard: [] },
+        { chat_id: chatId, message_id: messageId }
+      );
     }
 
-    if (data === 'Delete') {
+    if (data === "Delete") {
       bot.deleteMessage(chatId, messageId);
     }
 
     /******************************************************************/
     /*************************** Swap Buy *****************************/
     /******************************************************************/
-    if (data === 'Profit') {
-      const { title, content } = await getProfitMaxConfig(chatId)
+    if (data === "Profit") {
+      const { title, content } = await getProfitMaxConfig(chatId);
       bot.sendMessage(chatId, title, {
-        "reply_markup": {
-          "inline_keyboard": content
-        }, parse_mode: 'HTML'
+        reply_markup: {
+          inline_keyboard: content,
+        },
+        parse_mode: "HTML",
       });
     }
 
-    if (data === 'Remove_Profit') {
+    if (data === "Remove_Profit") {
       bot.sendMessage(chatId, "Enter a token address to remove", {
         parse_mode: "HTML",
       });
@@ -269,10 +292,19 @@ bot.on('callback_query', async (callbackQuery) => {
         const address = msg.text;
 
         try {
-          const { success, message } = await removeProfitMaxItem(address, chatId)
-          bot.sendMessage(chatId, success == true ? `Successfully Removed. ${message}` : `Removed failed. ${message}`, {
-            parse_mode: "HTML",
-          })
+          const { success, message } = await removeProfitMaxItem(
+            address,
+            chatId
+          );
+          bot.sendMessage(
+            chatId,
+            success == true
+              ? `Successfully Removed. ${message}`
+              : `Removed failed. ${message}`,
+            {
+              parse_mode: "HTML",
+            }
+          );
         } catch (err) {
           bot.sendMessage(
             chatId,
@@ -293,7 +325,7 @@ bot.on('callback_query', async (callbackQuery) => {
       });
     }
 
-    if (data === 'Add_Profit') {
+    if (data === "Add_Profit") {
       bot.sendMessage(chatId, "Enter a token address to add", {
         parse_mode: "HTML",
       });
@@ -305,13 +337,24 @@ bot.on('callback_query', async (callbackQuery) => {
         try {
           const isValid: boolean = PublicKey.isOnCurve(new PublicKey(address));
           console.log("isValid", isValid);
-          const { name, symbol } = await getTokenData(address)
+          const { name, symbol } = await getTokenData(address);
           console.log("metadata", name, symbol);
           if (!!name && !!symbol) {
-            const { success, message } = await addProfitMaxItem(address, name, symbol, chatId)
-            bot.sendMessage(chatId, success == true ? `Successfully Added. ${message}` : `Added failed. ${message}`, {
-              parse_mode: "HTML",
-            })
+            const { success, message } = await addProfitMaxItem(
+              address,
+              name,
+              symbol,
+              chatId
+            );
+            bot.sendMessage(
+              chatId,
+              success == true
+                ? `Successfully Added. ${message}`
+                : `Added failed. ${message}`,
+              {
+                parse_mode: "HTML",
+              }
+            );
           } else {
             bot.sendMessage(
               chatId,
@@ -350,57 +393,46 @@ bot.on('callback_query', async (callbackQuery) => {
     }
 
     // confirm showing privatekey
-    if (data === 'PrivateKey_Show_Confirm') {
+    if (data === "PrivateKey_Show_Confirm") {
       responseText = `Your <b>Private Key</b> is:
 <code>${secretKey}</code>
 You can now e.g. import the key into a wallet like Solflare (tap to copy)
-This message should auto-delete in 1 minute. If not, delete this message once you are done.`
-      bot.sendMessage(chatId, responseText, { parse_mode: 'HTML' });
+This message should auto-delete in 1 minute. If not, delete this message once you are done.`;
+      bot.sendMessage(chatId, responseText, { parse_mode: "HTML" });
     }
 
     // withdraw sol
-    if (data === 'Withdraw_SOL') {
-      responseText = `Reply with the destination address`
-      bot.sendMessage(chatId, responseText, { parse_mode: 'HTML' });
+    if (data === "Withdraw_SOL") {
+      responseText = `Reply with the destination address`;
+      bot.sendMessage(chatId, responseText, { parse_mode: "HTML" });
     }
 
     // reset wallet
-    if (data === 'Reset_Wallet') {
-      const { reset_title, reset_content } = await generateResetConfirmCommands(pubKey)
+    if (data === "Reset_Wallet") {
+      const { reset_title, reset_content } = await generateResetConfirmCommands(
+        pubKey
+      );
       bot.sendMessage(chatId, reset_title, {
-        "reply_markup": {
-          "inline_keyboard": reset_content
-        }, parse_mode: 'HTML'
+        reply_markup: {
+          inline_keyboard: reset_content,
+        },
+        parse_mode: "HTML",
       });
     }
 
-    // reset confirm
-    if (data === 'Reset_Confirm') {
-      await updateUser(chatId.toString(), {
-        walletAddress: base58.encode(Keypair.generate().secretKey).toString()
-      })
-    }
-
-    // create new wallet
-    if (data === "Create_New_Wallet") {
-      const res: any = await addNewWallet(chatId.toString(), base58.encode(Keypair.generate().secretKey).toString()
-      )
-      if (res.success) {
-        bot.sendMessage(chatId, "✅ New Wallet is added", { parse_mode: 'HTML' });
-        const newCommand = await generateWalletCommands(chatId.toString())
-        await bot.editMessageReplyMarkup({ inline_keyboard: newCommand.content }, { chat_id: message.chat.id, message_id: message.message_id });
-      }
-    }
-
     // get my wallet assets
-    if (data === 'Wallet_Assets') {
+    if (data === "Wallet_Assets") {
       if (pubKey) {
-        const tokens = await getMyTokens(new PublicKey(pubKey))
+        const tokens = await getMyTokens(new PublicKey(pubKey));
         let totalPrice: number = 0;
         if (tokens) {
-          let txt = ``
-          for (let i = 0; i < (tokens?.length > 15 ? 15 : tokens?.length); i++) {
-            totalPrice += tokens[i].price * tokens[i].balance
+          let txt = ``;
+          for (
+            let i = 0;
+            i < (tokens?.length > 15 ? 15 : tokens?.length);
+            i++
+          ) {
+            totalPrice += tokens[i].price * tokens[i].balance;
             txt += `
           CA: <code>${tokens[i].mintAddress}</code>
           name: ${tokens[i].name}
@@ -409,10 +441,10 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
           supply: ${tokens[i].supply}
           balance: ${tokens[i].balance}
           value: ${tokens[i].price * tokens[i].balance}
-          `
+          `;
           }
 
-          console.log("txt", txt)
+          console.log("txt", txt);
 
           bot.sendMessage(
             chatId,
@@ -420,298 +452,369 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
           Total Value: ${totalPrice}
           ${txt}
           `,
-            { parse_mode: 'HTML' }
+            { parse_mode: "HTML" }
           );
         }
       }
     }
 
-    // import solana wallet
-    if (data === 'Import_Solana_Wallet') {
-      bot.sendMessage(chatId, "Enter private key for import", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        try {
-          const privKey = msg.text;
-          if (!privKey) return;
-          const pubKey = Keypair.fromSecretKey(base58.decode(privKey)).publicKey.toBase58();
-
-          const res: any = await addNewWallet(chatId.toString(), privKey.toString())
-          if (res.success) {
-            bot.sendMessage(chatId, "✅ New Wallet is added", { parse_mode: 'HTML' });
-          }
-        } catch (err) {
-          bot.sendMessage(chatId, "❌ Wrong!!!", { parse_mode: 'HTML' });
-        }
-      })
-    }
-
     /******************************************************************/
     /*************************** Swap Buy *****************************/
     /******************************************************************/
-    if (data === 'Buy') {
-      await buyClick(bot, chatId)
+    if (data === "Buy") {
+      await buyClick(bot, chatId);
     }
 
-    if (data === 'SWAP_BUY_X') {
-      bot.sendMessage(chatId, "Enter the sol amount for buy", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        const user_cache = await getUserCacheById(chatId.toString())
-        if(user_cache.activeBuySwapSolAmount === Number(msg.text)) return;
+    if (data === "SWAP_BUY_X") {
+      bot.sendMessage(chatId, "Enter the sol amount for buy", {
+        parse_mode: "HTML",
+      });
+      bot.once("message", async (msg: Message) => {
+        const user_cache = await getUserCacheById(chatId.toString());
+        if (user_cache.activeBuySwapSolAmount === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
-          activeBuySwapSolAmount: Number(msg.text)
-        })
+          activeBuySwapSolAmount: Number(msg.text),
+        });
         if (res.success) {
-          await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+            { chat_id: message.chat.id, message_id: message.message_id }
+          );
         }
-      })
+      });
     }
-    if (data === 'Swap_Buy_Action') {
-      const userCache = await getUserCacheById(chatId.toString())
+    if (data === "Swap_Buy_Action") {
+      const userCache = await getUserCacheById(chatId.toString());
       if (userCache.activeBuySwapSolAmount) {
-        const txLink = await buyAmount(userCache.activeBuySwapSolAmount, chatId.toString(), kp)
-        console.log("txLink", txLink)
+        const txLink = await buyAmount(
+          userCache.activeBuySwapSolAmount,
+          chatId.toString(),
+          kp
+        );
+        console.log("txLink", txLink);
         if (txLink) {
-          bot.sendMessage(chatId, BUY_SUCCESS_MSG, { parse_mode: 'HTML' });
+          bot.sendMessage(chatId, BUY_SUCCESS_MSG, { parse_mode: "HTML" });
         }
       } else {
-        bot.sendMessage(chatId, "Parameters are not exactly set!!!", { parse_mode: 'HTML' });
+        bot.sendMessage(chatId, "Parameters are not exactly set!!!", {
+          parse_mode: "HTML",
+        });
       }
     }
-    if (data === 'Swap_Buy') {
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+    if (data === "Swap_Buy") {
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapBuy_0.001') {
+    if (data === "SwapBuy_0.001") {
       await updateData(chatId.toString(), {
-        activeBuySwapSolAmount: 0.001
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeBuySwapSolAmount: 0.001,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapBuy_1') {
+    if (data === "SwapBuy_1") {
       await updateData(chatId.toString(), {
-        activeBuySwapSolAmount: 1
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeBuySwapSolAmount: 1,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapBuy_3') {
+    if (data === "SwapBuy_3") {
       await updateData(chatId.toString(), {
-        activeBuySwapSolAmount: 3
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeBuySwapSolAmount: 3,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapBuy_5') {
+    if (data === "SwapBuy_5") {
       await updateData(chatId.toString(), {
-        activeBuySwapSolAmount: 5
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeBuySwapSolAmount: 5,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
     // buy 10 sol
-    if (data === 'SwapBuy_10') {
+    if (data === "SwapBuy_10") {
       await updateData(chatId.toString(), {
-        activeBuySwapSolAmount: 10
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeBuySwapSolAmount: 10,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapBuyKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
     // buy x amount
-    if (data === 'BUY_X') {
-      await buyAmount(0.005, chatId.toString(), kp)
+    if (data === "BUY_X") {
+      await buyAmount(0.005, chatId.toString(), kp);
     }
 
     /******************************************************************/
     /*************************** Swap Sell ****************************/
     /******************************************************************/
-    if (data === 'Sell') {
-      await sellClick(bot, chatId)
+    if (data === "Sell") {
+      await sellClick(bot, chatId);
     }
-    if (data === 'Swap_Sell') {
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+    if (data === "Swap_Sell") {
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'Swap_Sell_Action') {
-      const userCache = await getUserCacheById(chatId.toString())
+    if (data === "Swap_Sell_Action") {
+      const userCache = await getUserCacheById(chatId.toString());
       if (userCache.activeSellSwapPercent) {
-        const txLink = await sellAmount(userCache.activeSellSwapPercent, chatId.toString(), kp)
-        console.log("txLink", txLink)
+        const txLink = await sellAmount(
+          userCache.activeSellSwapPercent,
+          chatId.toString(),
+          kp
+        );
+        console.log("txLink", txLink);
         if (txLink) {
-          bot.sendMessage(chatId, SELL_SUCCESS_MSG, { parse_mode: 'HTML' });
+          bot.sendMessage(chatId, SELL_SUCCESS_MSG, { parse_mode: "HTML" });
         }
       } else {
-        bot.sendMessage(chatId, "Parameters are not exactly set!!!", { parse_mode: 'HTML' });
+        bot.sendMessage(chatId, "Parameters are not exactly set!!!", {
+          parse_mode: "HTML",
+        });
       }
     }
 
-    if (data === 'SwapSell_5') {
+    if (data === "SwapSell_5") {
       await updateData(chatId.toString(), {
-        activeSellSwapPercent: 5
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeSellSwapPercent: 5,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapSell_10') {
+    if (data === "SwapSell_10") {
       await updateData(chatId.toString(), {
-        activeSellSwapPercent: 10
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        activeSellSwapPercent: 10,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'SwapSell_20') {
+    if (data === "SwapSell_20") {
       const res = await updateData(chatId.toString(), {
-        activeSellSwapPercent: 20
-      })
+        activeSellSwapPercent: 20,
+      });
       if (res.success) {
         const keyboard = await getSwapSellKeyBoard(chatId.toString());
-        console.log("keyboard, keyboard", keyboard)
-        await bot.editMessageReplyMarkup({ inline_keyboard: keyboard }, { chat_id: message.chat.id, message_id: message.message_id });
+        console.log("keyboard, keyboard", keyboard);
+        await bot.editMessageReplyMarkup(
+          { inline_keyboard: keyboard },
+          { chat_id: message.chat.id, message_id: message.message_id }
+        );
       }
     }
 
-    if (data === 'SwapSell_50') {
+    if (data === "SwapSell_50") {
       const res = await updateData(chatId.toString(), {
-        activeSellSwapPercent: 50
-      })
+        activeSellSwapPercent: 50,
+      });
       if (res.success) {
         const keyboard = await getSwapSellKeyBoard(chatId.toString());
-        console.log("keyboard, keyboard", keyboard)
-        await bot.editMessageReplyMarkup({ inline_keyboard: keyboard }, { chat_id: message.chat.id, message_id: message.message_id });
+        console.log("keyboard, keyboard", keyboard);
+        await bot.editMessageReplyMarkup(
+          { inline_keyboard: keyboard },
+          { chat_id: message.chat.id, message_id: message.message_id }
+        );
       }
     }
 
-    if (data === 'SwapSell_100') {
+    if (data === "SwapSell_100") {
       const res = await updateData(chatId.toString(), {
-        activeSellSwapPercent: 100
-      })
+        activeSellSwapPercent: 100,
+      });
       if (res.success) {
         const keyboard = await getSwapSellKeyBoard(chatId.toString());
-        console.log("keyboard, keyboard", keyboard)
-        await bot.editMessageReplyMarkup({ inline_keyboard: keyboard }, { chat_id: message.chat.id, message_id: message.message_id });
+        console.log("keyboard, keyboard", keyboard);
+        await bot.editMessageReplyMarkup(
+          { inline_keyboard: keyboard },
+          { chat_id: message.chat.id, message_id: message.message_id }
+        );
       }
     }
-    if (data === 'SwapSell_X') {
-      const user_cache = await getUserCacheById(chatId.toString())
-      bot.sendMessage(chatId, "Enter the sol amount for sell", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        if(user_cache.activeSellSwapPercent === Number(msg.text)) return;
+    if (data === "SwapSell_X") {
+      const user_cache = await getUserCacheById(chatId.toString());
+      bot.sendMessage(chatId, "Enter the sol amount for sell", {
+        parse_mode: "HTML",
+      });
+      bot.once("message", async (msg: Message) => {
+        if (user_cache.activeSellSwapPercent === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
-          activeSellSwapPercent: Number(msg.text)
-        })
+          activeSellSwapPercent: Number(msg.text),
+        });
         if (res.success) {
-          await bot.editMessageReplyMarkup({ inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: await getSwapSellKeyBoard(chatId.toString()) },
+            { chat_id: message.chat.id, message_id: message.message_id }
+          );
         }
-      })
+      });
     }
 
-    if (data === 'SELL_5') {
-      await sellAmount(5, chatId.toString(), kp)
+    if (data === "SELL_5") {
+      await sellAmount(5, chatId.toString(), kp);
     }
-    if (data === 'SELL_10') {
-      await sellAmount(10, chatId.toString(), kp)
+    if (data === "SELL_10") {
+      await sellAmount(10, chatId.toString(), kp);
     }
-    if (data === 'SELL_30') {
-      await sellAmount(30, chatId.toString(), kp)
+    if (data === "SELL_30") {
+      await sellAmount(30, chatId.toString(), kp);
     }
-    if (data === 'SELL_50') {
-      await sellAmount(50, chatId.toString(), kp)
-    }
-
-    if (data === 'SELL_100') {
-      await sellAmount(100, chatId.toString(), kp)
+    if (data === "SELL_50") {
+      await sellAmount(50, chatId.toString(), kp);
     }
 
-    if (data === 'SELL_X') {
-      await sellAmount(0.005, chatId.toString(), kp)
+    if (data === "SELL_100") {
+      await sellAmount(100, chatId.toString(), kp);
+    }
+
+    if (data === "SELL_X") {
+      await sellAmount(0.005, chatId.toString(), kp);
     }
 
     /******************************************************************/
     /*************************** Setting Dashboard ****************************/
     /******************************************************************/
-    if (data === 'Setting_Dashboard') {
-      const { setting_title, setting_content } = await generateSettingCommands(chatId.toString())
+    if (data === "Setting_Dashboard") {
+      const { setting_title, setting_content } = await generateSettingCommands(
+        chatId.toString()
+      );
 
       bot.sendMessage(chatId, setting_title, {
-        "reply_markup": {
-          "inline_keyboard": setting_content
-        }, parse_mode: 'HTML'
+        reply_markup: {
+          inline_keyboard: setting_content,
+        },
+        parse_mode: "HTML",
       });
     }
-    if (data === 'Auto_Buy_Enable') {
+    if (data === "Auto_Buy_Enable") {
       await updateData(chatId.toString(), {
-        isAutoBuyEnabled: false
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSettingKeyboard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        isAutoBuyEnabled: 2,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSettingKeyboard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
-    if (data === 'Auto_Buy_Unable') {
+    if (data === "Auto_Buy_Unable") {
       await updateData(chatId.toString(), {
-        isAutoBuyEnabled: true
-      })
-      await bot.editMessageReplyMarkup({ inline_keyboard: await getSettingKeyboard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+        isAutoBuyEnabled: 1,
+      });
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: await getSettingKeyboard(chatId.toString()) },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
     }
 
-    if (data === 'AutoBuy_Amount') {
-      const user_cache = await getUserCacheById(chatId.toString())
-      bot.sendMessage(chatId, "Enter the sol amount for auto buy", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        if(user_cache.autoBuyAmount === Number(msg.text)) return;
+    if (data === "AutoBuy_Amount") {
+      const user_cache = await getUserCacheById(chatId.toString());
+      bot.sendMessage(chatId, "Enter the sol amount for auto buy", {
+        parse_mode: "HTML",
+      });
+      bot.once("message", async (msg: Message) => {
+        if (user_cache.autoBuyAmount === Number(msg.text)) return;
         const res = await updateData(chatId.toString(), {
-          autoBuyAmount: Number(msg.text)
-        })
+          autoBuyAmount: Number(msg.text),
+        });
         if (res.success) {
-          await bot.editMessageReplyMarkup({ inline_keyboard: await getSettingKeyboard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: await getSettingKeyboard(chatId.toString()) },
+            { chat_id: message.chat.id, message_id: message.message_id }
+          );
         }
-      })
+      });
     }
 
-    if (data === 'Buy_Slippage') {
-      const user_cache = await getUserCacheById(chatId.toString())
-      bot.sendMessage(chatId, "Enter the slippage amount for buy", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        if(user_cache.buySlippage === Number(msg.text)) return;
+    if (data === "Buy_Slippage") {
+      const user_cache = await getUserCacheById(chatId.toString());
+      bot.sendMessage(chatId, "Enter the slippage amount for buy", {
+        parse_mode: "HTML",
+      });
+      bot.once("message", async (msg: Message) => {
+        if (
+          isVariableExisting(user_cache, "buySlippage") &&
+          user_cache.buySlippage === Number(msg.text)
+        )
+          return;
         const res = await updateData(chatId.toString(), {
-          buySlippage: Number(msg.text)
-        })
+          buySlippage: Number(msg.text),
+        });
         if (res.success) {
-          await bot.editMessageReplyMarkup({ inline_keyboard: await getSettingKeyboard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: await getSettingKeyboard(chatId.toString()) },
+            { chat_id: message.chat.id, message_id: message.message_id }
+          );
         }
-      })
+      });
     }
-    if (data === 'Sell_Slippage') {
-      const user_cache = await getUserCacheById(chatId.toString())
+    if (data === "Sell_Slippage") {
+      const user_cache = await getUserCacheById(chatId.toString());
 
-      bot.sendMessage(chatId, "Enter the slippage amount for buy", { parse_mode: 'HTML' });
-      bot.once('message', async (msg: Message) => {
-        if(user_cache.sellSlippage === Number(msg.text)) return;
+      bot.sendMessage(chatId, "Enter the slippage amount for buy", {
+        parse_mode: "HTML",
+      });
+      bot.once("message", async (msg: Message) => {
+        if (
+          isVariableExisting(user_cache, "sellSlippage") &&
+          user_cache.sellSlippage === Number(msg.text)
+        )
+          return;
         const res = await updateData(chatId.toString(), {
-          sellSlippage: Number(msg.text)
-        })
+          sellSlippage: Number(msg.text),
+        });
         if (res.success) {
-          await bot.editMessageReplyMarkup({ inline_keyboard: await getSettingKeyboard(chatId.toString()) }, { chat_id: message.chat.id, message_id: message.message_id });
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: await getSettingKeyboard(chatId.toString()) },
+            { chat_id: message.chat.id, message_id: message.message_id }
+          );
         }
-      })
+      });
     }
 
     if (data?.includes("TgWallet_")) {
-      const str_arr = data.split("_")
-      const newActiveId = Number(str_arr[1])
+      const str_arr = data.split("_");
+      const newActiveId = Number(str_arr[1]);
       await updateData(chatId.toString(), {
-        activeWallet: newActiveId
-      })
-      const newCommand = await generateWalletCommands(chatId.toString())
-      await bot.editMessageReplyMarkup({ inline_keyboard: newCommand.content }, { chat_id: message.chat.id, message_id: message.message_id });
-    }
-
-    else responseText = '❌ Wrong!!!';
+        activeWallet: newActiveId,
+      });
+      const newCommand = await generateWalletCommands();
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: newCommand.content },
+        { chat_id: message.chat.id, message_id: message.message_id }
+      );
+    } else responseText = "❌ Wrong!!!";
 
     bot.answerCallbackQuery(callbackQuery.id);
   } catch (err) {
-    console.log("err", err)
+    console.log("err", err);
   }
 });
-
 
 export async function readJson(filename: string = "user.json") {
   if (!fs.existsSync(filename)) {
     // If the file does not exist, create an empty array
-    fs.writeFileSync(filename, '[]', 'utf-8');
+    fs.writeFileSync(filename, "[]", "utf-8");
   }
-  const data = fs.readFileSync(filename, 'utf-8');
+  const data = fs.readFileSync(filename, "utf-8");
   return JSON.parse(data);
 }
 
 export function writeJson(filePath: string, data: any) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8')
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
 }

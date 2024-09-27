@@ -1,44 +1,10 @@
 {
-  "245220167": {
-    "activeWallet": 0
-  },
-  "1535497198": {
-    "activeWallet": 0
-  },
   "5807344963": {
-    "activeWallet": 0,
-    "activeBuyMint": "Ek81YYpoowq26kYMURPsUbgg5vB4c654rgraJfympump",
-    "activeBuySwapSolAmount": 3,
-    "isAutoBuyEnabled": false,
-    "activeSellMint": "3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump",
-    "sellSlippage": 5,
-    "buySlippage": 5,
-    "autoBuyAmount": 0.01
-  },
-  "6711635948": {
-    "activeWallet": 0
-  },
-  "6032811055": {
-    "activeWallet": 0
-  },
-  "5554796945": {
-    "activeWallet": 0
-  },
-  "7384192158": {
-    "activeWallet": 0
-  },
-  "7054192592": {
-    "activeWallet": 0
-  },
-  "5079213266": {
-    "activeWallet": 0,
-    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "activeBuySwapSolAmount": 0.1,
-    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "activeSellSwapPercent": 100
-  },
-  "6381452440": {
-    "activeWallet": 0,
-    "profitMaxList": []
+    "activeBuyMint": "9G9Rtb3aHWyxgjvgcvuUazJMK6Yiz3J732GJnAywpump",
+    "activeBuySwapSolAmount": 2423,
+    "activeSellMint": "9G9Rtb3aHWyxgjvgcvuUazJMK6Yiz3J732GJnAywpump",
+    "activeSellSwapPercent": 5,
+    "sellSlippage": 123,
+    "buySlippage": 12
   }
 }

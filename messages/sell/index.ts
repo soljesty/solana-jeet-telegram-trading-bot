@@ -1,13 +1,13 @@
-import { Message, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import TelegramBot from "node-telegram-bot-api";
-import { getUserCacheById, getUserPubKey } from "../../controllers/user";
 import { getTokenAccountBalance, updateData } from "../../utils";
-import { solConnection } from "../../config";
-import { getPoolIdFromDexScreener } from "../../utils/poolKeys";
+import { SECRET_KEY, solConnection } from "../../config";
 import { generateSwapSellCommands } from "../../commands/sell";
-
+import base58 from 'bs58'
 export const sellClick = async (bot: TelegramBot, chatId: number) => {
-  const pubKey = await getUserPubKey(chatId.toString())
+  const secretKey: any = SECRET_KEY
+  const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey))
+  const pubKey = kp.publicKey.toBase58()
   bot.sendMessage(chatId, "Enter a token address to sell", { parse_mode: 'HTML' });
   bot.once('message', async (msg: any) => {
     if (!msg.text) return;
@@ -16,9 +16,6 @@ export const sellClick = async (bot: TelegramBot, chatId: number) => {
     try {
       // check if inputted address is valid
       const isValid: boolean = PublicKey.isOnCurve(new PublicKey(baseMint))
-      // if (!isValid) return;
-      // const poolId: PublicKey | null = await getPoolIdFromDexScreener(new PublicKey(baseMint))
-      // console.log("poolId---->", poolId)
 
       // if (poolId) {
         let balance: any = 0;
@@ -47,19 +44,7 @@ export const sellClick = async (bot: TelegramBot, chatId: number) => {
             "inline_keyboard": sell_content
           }, parse_mode: 'HTML'
         });
-      // } else {
-      //   bot.sendMessage(chatId, "Pool ID is not existing... Try with another token!!", {
-      //     "reply_markup": {
-      //       "inline_keyboard": [
-      //         [
-      //           { text: 'Try Again', callback_data: 'Sell' },
-      //           { text: 'Cancel', callback_data: 'Cancel' },
-      //         ]
-      //       ]
-      //     },
-      //     parse_mode: 'HTML'
-      //   });
-      // }
+     
     } catch (err) {
       bot.sendMessage(chatId, "Token Address is not Valid... Try with another token!!", {
         "reply_markup": {

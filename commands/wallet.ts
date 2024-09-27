@@ -1,29 +1,17 @@
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { BOT_NAME, solConnection } from "../config";
-import { getUserCacheById, getWalletsByUserId } from "../controllers/user";
-import { getActiveWallet } from "../utils";
+import { BOT_NAME, SECRET_KEY, solConnection } from "../config";
 import base58 from 'bs58'
-// @ts-ignore
-export const generateWalletCommands = async (chatId: string) => {
+
+export const generateWalletCommands = async () => {
   let solBal: number;
   let title: string;
-  const wallets = await getWalletsByUserId(chatId)
-  // console.log("wallets", wallets)
-  const activeWalletId = await getActiveWallet(chatId)
-  console.log("activeWalletId", activeWalletId)
-  const secretKey = wallets[activeWalletId]
+
+  const secretKey = SECRET_KEY
   console.log("secretKey")
   const kp: any = Keypair.fromSecretKey(base58.decode(secretKey))
   const pub_key = kp.publicKey.toBase58()
-  let walletKeyboards = [];
-  for (let i = 0; i < wallets.length; i++) {
-    walletKeyboards.push({
-      text: activeWalletId === i ? ('✅ W' + i) : ('W' + i),
-      callback_data: "TgWallet_" + i
-    })
-  }
+ 
   const content = [
-    walletKeyboards,
     [
       { text: 'View on Solscan', url: `https://solscan.io/account/${pub_key}` },
       { text: 'Cancel', callback_data: 'Cancel' },
@@ -33,20 +21,11 @@ export const generateWalletCommands = async (chatId: string) => {
       { text: 'Withdraw SOL', callback_data: 'Withdraw_SOL' },
     ],
     [
-      { text: 'Reset Wallet', callback_data: 'Reset_Wallet' },
       { text: 'Export Private Key', callback_data: 'Export_PrivateKey' },
     ],
     [
       {
         text: 'Assets', callback_data: 'Wallet_Assets'
-      }
-    ],
-    [
-      {
-        text: 'Create New Wallet', callback_data: 'Create_New_Wallet'
-      },
-      {
-        text: 'Import Solana Wallet', callback_data: 'Import_Solana_Wallet'
       }
     ]
   ]

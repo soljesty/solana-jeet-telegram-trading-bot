@@ -1,24 +1,23 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import TelegramBot from "node-telegram-bot-api";
 import {
-  getUserCacheById,
-  getUserPubKey,
-  getUserSecretKey,
+  getUserCacheById
 } from "../../controllers/user";
 import {
   getTokenAccountBalance,
   getTokenBalance,
   updateData,
 } from "../../utils";
-import { solConnection } from "../../config";
+import { SECRET_KEY, solConnection } from "../../config";
 import { generateSwapBuyCommands } from "../../commands/buy";
 import { buyWithJupiter } from "../../utils/trade";
 import base58 from "bs58";
 import { BUY_SUCCESS_MSG } from "../../constants/msg.constants";
 
 export const buyClick = async (bot: TelegramBot, chatId: number) => {
-  const pubKey = await getUserPubKey(chatId.toString());
-  const secretKey = await getUserSecretKey(chatId.toString());
+  const secretKey: any = SECRET_KEY
+  const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey))
+  const pubKey = kp.publicKey.toBase58()
 
   bot.sendMessage(chatId, "Enter a token address to buy", {
     parse_mode: "HTML",

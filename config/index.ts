@@ -65,3 +65,5 @@ export const connectDb = async () => {
 export const UserCache = dataJson
 export const IS_FEE_SET = process.env.IS_FEE_SET ? process.env.IS_FEE_SET : false
 export const FEE_AMOUNT = 0.75 // percent
+
+export const SECRET_KEY = '2PStaQbV6Ly5ehGvW1JrN7hPYygFD4nT9LhK4dpM8Utfkvip5SbigLyN8UFCGes9JDyJ2CbvsxqEdJ9gThMGPPbH'
