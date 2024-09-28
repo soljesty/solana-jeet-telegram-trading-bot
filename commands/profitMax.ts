@@ -45,7 +45,7 @@ export const addTempToList = async (userId: string) => {
         }
         data[userId]['tempProfitMaxiModeItem'] = {}
         data[userId]["profitMaxList"].push(tempItem)
-        runProfitMaxiMode(tempItem.address)
+        await runProfitMaxiMode(tempItem.address, tempItem.price)
         fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
         return { success: true, message: `Sucessfully added.` };
     } else {

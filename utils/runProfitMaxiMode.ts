@@ -4,9 +4,12 @@ import { SECRET_KEY, solConnection } from "../config";
 import { getTokenPriceFromJupiterByTokenMint } from "./token";
 import base58 from "bs58";
 import { sellWithJupiter } from "./trade";
-export const runProfitMaxiMode = async (tokenMintCA: string) => {
+export const runProfitMaxiMode = async (
+  tokenMintCA: string,
+  expPrice: number
+) => {
   try {
-    console.log("RUNNING PROFIT MAXI MODE ===== CA: ", tokenMintCA)
+    console.log("RUNNING PROFIT MAXI MODE ===== CA: ", tokenMintCA);
     const secretKey: any = SECRET_KEY;
     const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
 
@@ -78,7 +81,7 @@ export const runProfitMaxiMode = async (tokenMintCA: string) => {
                       eachBal.mint == baseMint.toBase58()
                 ) {
                   preBaseBal = eachBal.uiTokenAmount.uiAmount!;
-                } 
+                }
 
                 if (
                   IS_AMM
@@ -90,19 +93,22 @@ export const runProfitMaxiMode = async (tokenMintCA: string) => {
                 }
               });
               const dTokenBal = postQuoteBal! - preQuoteBal!;
-              console.log("dTokenBal", dTokenBal)
+              const price = await getTokenPriceFromJupiterByTokenMint(
+                tokenMintCA
+              );
+              console.log("dTokenBal", dTokenBal);
               if (dTokenBal < 0) {
-                console.log("==============================");
-                console.log("buy Amount:", dTokenBal);
-                console.log(
-                  "price:",
-                  await getTokenPriceFromJupiterByTokenMint(tokenMintCA)
-                );
-                await sellWithJupiter(
-                  kp,
-                  new PublicKey(tokenMintCA),
-                  Math.abs(dTokenBal) / 100
-                );
+                if (price > expPrice) {
+                  console.log("==============================");
+                  console.log("buy Amount:", dTokenBal);
+                  console.log("price: ", price);
+
+                  await sellWithJupiter(
+                    kp,
+                    new PublicKey(tokenMintCA),
+                    Math.abs(dTokenBal)
+                  );
+                }
               }
             }
           } catch (error) {
@@ -113,7 +119,6 @@ export const runProfitMaxiMode = async (tokenMintCA: string) => {
       "confirmed"
     );
   } catch (err) {
-    console.log("runProfitMaxiMode ERROR:", err)
+    console.log("runProfitMaxiMode ERROR:", err);
   }
 };
-
