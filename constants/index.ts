@@ -10,6 +10,7 @@ export const commandList = [
   { command: 'buy', description: 'Buy tokens' },
   { command: 'sell', description: 'Sell tokens' },
   { command: 'wallet', description: 'Manage main wallet' },
+  { command: 'profitmaxmode', description: 'Manage profit maxi mode list' },
   { command: 'settings', description: 'Management wallet settings' },
   { command: 'autobuy', description: 'Enable/Disable autobuy' },
 ];

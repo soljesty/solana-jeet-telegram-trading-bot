@@ -40,8 +40,8 @@ export const readDataJson = () => {
 
 export const updateUser = (userId: string, updates: any) => {
   const data = readDataJson();
-  if (data.users[userId]) {
-    Object.assign(data.users[userId], updates);
+  if (data[userId]) {
+    Object.assign(data[userId], updates);
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), "utf-8");
     return { success: true, message: "User data updated." };
   }
@@ -182,69 +182,6 @@ export async function updateData(
   }
 }
 
-export async function addProfitMaxItem(
-  address: string,
-  name: string,
-  symbol: string,
-  key: string // Change this to string
-) {
-  const data = JSON.parse(fs.readFileSync("data.json", "utf8"));
-  
-  // Check if the user exists in the data
-  if (!data.users[key]) { // Check against the string key
-    return { success: false, message: `You are not registered.` };
-  }
-
-  // Now we can safely check for profitMaxList
-  if ("profitMaxList" in data.users[key]) {
-    const isDuplicate = data.users[key]["profitMaxList"].some((item: any) => item.address === address);
-    if (isDuplicate) {
-      return { success: false, message: `Address <code>${address}</code> already exists.` };
-    } else {
-      data.users[key]["profitMaxList"].push({ address, name, symbol });
-      fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
-      return { success: true, message: `Address <code>${address}</code> has been added.` };
-    }
-  } else {
-    data.users[key]["profitMaxList"] = [{ address, name, symbol }];
-    fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
-    return { success: true, message: `Address <code>${address}</code> has been added.` };
-  }
-}
-
-export async function removeProfitMaxItem(address: string, key: number) {
-  const data = JSON.parse(fs.readFileSync("data.json", "utf8"));
-  if (data[key]) {
-    if ("profitMaxList" in data[key]) {
-      const isExist = data[key]["profitMaxList"].some(
-        (item: any) => item.address === address
-      );
-      if (!isExist) {
-        return {
-          success: false,
-          message: `Address <code>${address}</code> has not exist`,
-        };
-      } else {
-        data[key].profitMaxList = data[key].profitMaxList.filter(
-          (item: any) => item.address !== address
-        );
-        fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
-        return {
-          success: true,
-          message: `Address <code>${address}</code> has been removed.`,
-        };
-      }
-    } else {
-      return {
-        success: false,
-        message: `Address <code>${address}</code> has not exist.`,
-      };
-    }
-  } else {
-    return { success: false, message: `You are not registered.` };
-  }
-}
-
 export function getRemainTime(diff: number) {
   let hr;
   let min;
@@ -353,8 +290,7 @@ export const executeVersionedTx = async (transaction: VersionedTransaction) => {
     return "";
   } else {
     console.log(
-      `Confrimed transaction: https://solscan.io/tx/${signature}${
-        CLUSTER === "devnet" ? "?cluster=devnet" : ""
+      `Confrimed transaction: https://solscan.io/tx/${signature}${CLUSTER === "devnet" ? "?cluster=devnet" : ""
       }`
     );
   }

@@ -1,13 +1,8 @@
-import { PublicKey } from "@solana/web3.js";
-import TelegramBot from "node-telegram-bot-api";
-import { getTokenData } from "../../utils/token";
-import { addProfitMaxItem } from "../../utils";
-
 interface ProfitType {
   address: string;
   name: string;
   symbol: string;
-  amount?: number;
+  price: number;
   mode?: "buy" | "sell";
 }
 
@@ -23,7 +18,7 @@ export const showProfitMaxList = (info: ProfitType[] | undefined) => {
 
   if (info) {
     info.forEach((item, idx) => {
-      title += `\n\n#${idx}\nAddress: ${item.address}\nName: ${item.name}Symbol: ${item.symbol}`;
+      title += `\n\nAddress: ${item.address}\n   Name: ${item.name}\n   Symbol: ${item.symbol}   Price: ${item.price}`;
     });
   }
 
