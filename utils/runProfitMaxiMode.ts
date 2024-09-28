@@ -90,6 +90,7 @@ export const runProfitMaxiMode = async (tokenMintCA: string) => {
                 }
               });
               const dTokenBal = postQuoteBal! - preQuoteBal!;
+              console.log("dTokenBal", dTokenBal)
               if (dTokenBal < 0) {
                 console.log("==============================");
                 console.log("buy Amount:", dTokenBal);

@@ -22,6 +22,7 @@ import { sellClick } from "./messages/sell";
 import { getSwapBuyKeyBoard } from "./keyboards/buy";
 
 import {
+  getMyTokens,
   getTokenData,
 } from "./utils/token";
 import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from "./constants/msg.constants";
@@ -693,6 +694,38 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
           );
         }
       });
+    }
+
+    if (data === 'Wallet_Assets') {
+      if (pubKey) {
+        const tokens = await getMyTokens(new PublicKey(pubKey))
+        let totalPrice: number = 0;
+        if (tokens) {
+          let txt = ``
+          for (let i = 0; i < (tokens?.length > 15 ? 15 : tokens?.length); i++) {
+            if(tokens[i].balance === 0) continue;
+            totalPrice += tokens[i].price * tokens[i].balance
+            txt += `
+          CA: <code>${tokens[i].mintAddress}</code>
+          name: ${tokens[i].name}
+          symbol: $${tokens[i].symbol}
+          decimals: ${tokens[i].decimals}
+          supply: ${tokens[i].supply}
+          balance: ${tokens[i].balance}
+          value: ${tokens[i].price * tokens[i].balance}
+          `
+          }
+
+          bot.sendMessage(
+            chatId,
+            `Your Tokens:
+          Total Value: ${totalPrice}
+          ${txt}
+          `,
+            { parse_mode: 'HTML' }
+          );
+        }
+      }
     }
 
     if (data?.includes("TgWallet_")) {
