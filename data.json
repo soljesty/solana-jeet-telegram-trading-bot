@@ -45,6 +45,13 @@
           "symbol": "MOODENG"
         }
       ]
+    },
+    "5807344963": {
+      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "buySlippage": 0,
+      "sellSlippage": 0,
+      "profitMaxList": []
     }
   }
 }
