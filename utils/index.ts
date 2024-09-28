@@ -20,7 +20,7 @@ import fs from "fs";
 import { sendAndConfirmTransaction } from "@solana/web3.js";
 import { LIQUIDITY_STATE_LAYOUT_V4 } from "@raydium-io/raydium-sdk";
 
-const dataFilePath = '../data.json';
+const dataFilePath = 'data.json';
 
 interface Blockhash {
   blockhash: string;

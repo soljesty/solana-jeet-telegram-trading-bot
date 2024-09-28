@@ -23,7 +23,7 @@ export const showProfitMaxList = (info: ProfitType[] | undefined) => {
 
   if (info) {
     info.forEach((item, idx) => {
-      title += `\n\n#${idx}\nAddress: ${item.address}\nName: ${item.name}`;
+      title += `\n\n#${idx}\nAddress: ${item.address}\nName: ${item.name}Symbol: ${item.symbol}`;
     });
   }
 
