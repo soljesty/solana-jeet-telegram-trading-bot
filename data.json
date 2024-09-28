@@ -19,6 +19,32 @@
           "symbol": "RBT"
         }
       ]
+    },
+    "6381452440": {
+      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "buySlippage": 0,
+      "sellSlippage": 0,
+      "profitMaxList": [
+        {
+          "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "name": "USD Coin",
+          "symbol": "USDC"
+        }
+      ]
+    },
+    "6055314930": {
+      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "buySlippage": 0,
+      "sellSlippage": 0,
+      "profitMaxList": [
+        {
+          "address": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
+          "name": "Moo Deng",
+          "symbol": "MOODENG"
+        }
+      ]
     }
   }
 }

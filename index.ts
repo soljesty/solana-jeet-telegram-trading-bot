@@ -76,7 +76,7 @@ bot.onText(/\/home/, async (msg: Message) => {
       reply_markup: {
         inline_keyboard: content,
       },
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
     });
   } catch (err) {}
 });
@@ -102,7 +102,7 @@ bot.onText(/\/start/, async (msg: Message) => {
       reply_markup: {
         inline_keyboard: content,
       },
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
     });
   } catch (err) {}
 });
@@ -224,7 +224,7 @@ bot.on("callback_query", async (callbackQuery) => {
     /*************************** Swap Buy *****************************/
     /******************************************************************/
     if (data === "Profit") {
-      const { title, content } = await getProfitMaxConfig(chatId);
+      const { title, content } = await getProfitMaxConfig(chatId.toString());
       bot.sendMessage(chatId, title, {
         reply_markup: {
           inline_keyboard: content,

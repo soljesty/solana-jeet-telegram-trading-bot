@@ -4,7 +4,7 @@ import { Connection } from '@solana/web3.js';
 import dataJson from '../data.json';
 
 // Hardcoded Telegram token
-export const TELEGRAM_ACCESS_TOKEN: string = "7001243205:AAEBUpqHXDnQ0PirKUN4_J7tSXsC6KQK4bs";
+export const TELEGRAM_ACCESS_TOKEN: string = "7848770942:AAEXytzr8w8uTiDOJeoIykoV_xyfjvcbrgc";
 
 export const MONGO_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
 
