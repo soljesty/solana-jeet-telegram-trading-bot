@@ -8,8 +8,8 @@ export const welcome = async (walletAddr: string, userId: number) => {
   const data = JSON.parse(fs.readFileSync(dataFilePath, "utf8"));
 
   // Register the user if not already registered
-  if (!data.users[userId]) {
-    data.users[userId] = {
+  if (!data[userId]) {
+    data[userId] = {
       activeBuyMint: "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
       activeSellMint: "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
       buySlippage: 0,

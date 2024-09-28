@@ -6,9 +6,7 @@ import { buyAmount, getUserCacheById, sellAmount } from "./controllers/user";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import base58 from "bs58";
 import {
-  addProfitMaxItem,
   isVariableExisting,
-  removeProfitMaxItem,
   updateData,
 } from "./utils";
 import {
@@ -30,7 +28,7 @@ import { walletClick } from "./messages/wallet";
 import { getSwapSellKeyBoard } from "./keyboards/sell";
 import { generateSettingCommands } from "./commands/setting";
 import { getSettingKeyboard } from "./keyboards/setting";
-import { getProfitMaxConfig } from "./commands/profitMax";
+import { addProfitMaxAddress, addProfitMaxPrice, addTempToList, getProfitMaxConfig, getProfitMaxTempItem, removeProfitMaxItem } from "./commands/profitMax";
 import { commandList } from "./constants";
 
 import { runProfitMaxiMode } from "./utils/runProfitMaxiMode";
@@ -71,14 +69,14 @@ bot.onText(/\/home/, async (msg: Message) => {
       },
       parse_mode: "HTML",
     });
-  } catch (err) {}
+  } catch (err) { }
 });
 
 
 // test
 bot.onText(/\/test/, async (msg: Message) => {
   try {
-  } catch (err) {}
+  } catch (err) { }
 });
 
 
@@ -97,7 +95,9 @@ bot.onText(/\/start/, async (msg: Message) => {
       },
       parse_mode: "HTML",
     });
-  } catch (err) {}
+  } catch (err) {
+    console.log(err)
+  }
 });
 
 
@@ -120,7 +120,7 @@ bot.onText(/\/wallet/, async (msg: Message) => {
   try {
     const chatId = msg.chat.id;
     await walletClick(bot, chatId);
-  } catch (err) {}
+  } catch (err) { }
 });
 
 
@@ -137,7 +137,22 @@ bot.onText(/\/settings/, async (msg: Message) => {
       },
       parse_mode: "Markdown",
     });
-  } catch (err) {}
+  } catch (err) { }
+});
+
+// go to management profit maxi mode list
+bot.onText(/\/profitmaxmode/, async (msg: Message) => {
+  try {
+    const chatId = msg.chat.id;
+
+    const { title, content } = await getProfitMaxConfig(chatId.toString());
+    bot.sendMessage(chatId, title, {
+      reply_markup: {
+        inline_keyboard: content,
+      },
+      parse_mode: "HTML",
+    });
+  } catch (err) { }
 });
 
 
@@ -146,7 +161,7 @@ bot.onText(/\/autobuy/, async (msg: Message) => {
   try {
     const chatId = msg.chat.id;
     await buyClick(bot, chatId);
-  } catch (err) {}
+  } catch (err) { }
 });
 
 
@@ -214,8 +229,10 @@ bot.on("callback_query", async (callbackQuery) => {
     }
 
     /******************************************************************/
-    /*************************** Swap Buy *****************************/
+    /************** Profit Maxi Mode List Management ******************/
     /******************************************************************/
+
+    // Show profit maxi mode list
     if (data === "Profit") {
       const { title, content } = await getProfitMaxConfig(chatId.toString());
       bot.sendMessage(chatId, title, {
@@ -226,6 +243,7 @@ bot.on("callback_query", async (callbackQuery) => {
       });
     }
 
+    // Remove item form profit maxi mode list
     if (data === "Remove_Profit") {
       bot.sendMessage(chatId, "Enter a token address to remove", {
         parse_mode: "HTML",
@@ -269,8 +287,20 @@ bot.on("callback_query", async (callbackQuery) => {
       });
     }
 
+    // Show msg to add item profit maxi mode temp list
     if (data === "Add_Profit") {
-      bot.sendMessage(chatId, "Enter a token address to add", {
+      const item = await getProfitMaxTempItem(chatId)
+      bot.sendMessage(chatId, item.title, {
+        reply_markup: {
+          inline_keyboard: item.content
+        },
+        parse_mode: "HTML",
+      });
+    }
+
+    // Input address to added to profit maxi mode temp list
+    if (data == 'Add_Address') {
+      bot.sendMessage(chatId, `Enter a token Address to add `, {
         parse_mode: "HTML",
       });
 
@@ -284,24 +314,21 @@ bot.on("callback_query", async (callbackQuery) => {
           const { name, symbol } = await getTokenData(address);
           console.log("metadata", name, symbol);
           if (!!name && !!symbol) {
-            const { success, message } = await addProfitMaxItem(
+            const { success, message } = await addProfitMaxAddress(
               address,
               name,
               symbol,
               chatId
             );
             if (success == true) {
-              await runProfitMaxiMode(address)
-            }
-            bot.sendMessage(
-              chatId,
-              success == true
-                ? `Successfully Added. ${message}`
-                : `Added failed. ${message}`,
-              {
+              const item = await getProfitMaxTempItem(chatId)
+              bot.sendMessage(chatId, item.title, {
+                reply_markup: {
+                  inline_keyboard: item.content
+                },
                 parse_mode: "HTML",
-              }
-            );
+              });
+            }
           } else {
             bot.sendMessage(
               chatId,
@@ -326,11 +353,11 @@ bot.on("callback_query", async (callbackQuery) => {
             {
               reply_markup: {
                 inline_keyboard: [
-                    [
-                      { text: "Try Again", callback_data: "Add_Profit" },
-                      { text: "Cancel", callback_data: "Delete" },
-                    ],
+                  [
+                    { text: "Try Again", callback_data: "Add_Profit" },
+                    { text: "Cancel", callback_data: "Delete" },
                   ],
+                ],
               },
               parse_mode: "HTML",
             }
@@ -338,6 +365,100 @@ bot.on("callback_query", async (callbackQuery) => {
         }
       });
     }
+
+    // Input price to added to profit maxi mode temp list
+    if (data == 'Add_Price') {
+      bot.sendMessage(chatId, `Enter a token Address to add `, {
+        parse_mode: "HTML",
+      });
+
+      bot.once("message", async (msg: any) => {
+        if (!msg.text) return;
+        const price = msg.text;
+
+        try {
+          const isValid: boolean = Number(price) > 0
+          console.log("isValid", isValid);
+          if (isValid) {
+            const { success, message } = await addProfitMaxPrice(
+              Number(price),
+              chatId
+            );
+            if (success == true) {
+              const item = await getProfitMaxTempItem(chatId)
+              bot.sendMessage(chatId, item.title, {
+                reply_markup: {
+                  inline_keyboard: item.content
+                },
+                parse_mode: "HTML",
+              });
+            }
+          } else {
+            bot.sendMessage(
+              chatId,
+              "Token Price is not Valid... Try with another number!!",
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      { text: "Try Again", callback_data: "Add_Price" },
+                      { text: "Cancel", callback_data: "Delete" },
+                    ],
+                  ],
+                },
+                parse_mode: "HTML",
+              }
+            );
+          }
+        } catch (err) {
+          bot.sendMessage(
+            chatId,
+            "Token Price is not Valid... Try with another number!!",
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "Try Again", callback_data: "Add_Price" },
+                    { text: "Cancel", callback_data: "Delete" },
+                  ],
+                ],
+              },
+              parse_mode: "HTML",
+            }
+          );
+        }
+      });
+    }
+
+    // Insert profit maxi mode temp list to main list
+    if (data == 'Temp_To_List') {
+      try {
+        const data = await addTempToList(chatId)
+        bot.sendMessage(chatId, data.message, {
+          reply_markup: {
+            inline_keyboard: [[{ text: "Close", callback_data: "Delete" }]]
+          },
+          parse_mode: "HTML",
+        });
+      } catch (err) {
+        bot.sendMessage(
+          chatId,
+          "Faild... Please try again!!",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: "Try Again", callback_data: "Temp_To_List" },
+                  { text: "Cancel", callback_data: "Delete" },
+                ],
+              ],
+            },
+            parse_mode: "HTML",
+          }
+        );
+      }
+    }
+
 
     // confirm showing privatekey
     if (data === "PrivateKey_Show_Confirm") {
@@ -703,7 +824,7 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
         if (tokens) {
           let txt = ``
           for (let i = 0; i < (tokens?.length > 15 ? 15 : tokens?.length); i++) {
-            if(tokens[i].balance === 0) continue;
+            if (tokens[i].balance === 0) continue;
             totalPrice += tokens[i].price * tokens[i].balance
             txt += `
           CA: <code>${tokens[i].mintAddress}</code>
