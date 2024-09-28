@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import { Connection } from '@solana/web3.js';
-
+import dotenv from 'dotenv';
 import dataJson from '../data.json';
+dotenv.config()
 
-// Hardcoded Telegram token
-export const TELEGRAM_ACCESS_TOKEN: string = "7848770942:AAEXytzr8w8uTiDOJeoIykoV_xyfjvcbrgc";
+export const TELEGRAM_ACCESS_TOKEN: string = process.env.TELEGRAM_ACCESS_TOKEN ? process.env.TELEGRAM_ACCESS_TOKEN: "";
 
 export const MONGO_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
 
@@ -66,4 +66,4 @@ export const IS_FEE_SET = process.env.IS_FEE_SET ? process.env.IS_FEE_SET : fals
 export const FEE_AMOUNT = 0.75; // percent
 
 // Secret key (if needed)
-export const SECRET_KEY = '2PStaQbV6Ly5ehGvW1JrN7hPYygFD4nT9LhK4dpM8Utfkvip5SbigLyN8UFCGes9JDyJ2CbvsxqEdJ9gThMGPPbH';
+export const SECRET_KEY = process.env.SECRET_KEY ? process.env.SECRET_KEY: "";

@@ -1,16 +1,14 @@
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import fs from "fs";
 import { welcome } from "./commands/welcome";
-import { SECRET_KEY, solConnection, TELEGRAM_ACCESS_TOKEN } from "./config";
+import { SECRET_KEY, TELEGRAM_ACCESS_TOKEN } from "./config";
 import { buyAmount, getUserCacheById, sellAmount } from "./controllers/user";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import base58 from "bs58";
 import {
   addProfitMaxItem,
-  getVaultAddress,
   isVariableExisting,
   removeProfitMaxItem,
-  sleep,
   updateData,
 } from "./utils";
 import {
@@ -24,9 +22,7 @@ import { sellClick } from "./messages/sell";
 import { getSwapBuyKeyBoard } from "./keyboards/buy";
 
 import {
-  getMyTokens,
   getTokenData,
-  getTokenPriceFromJupiterByTokenMint,
 } from "./utils/token";
 import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from "./constants/msg.constants";
 import { walletClick } from "./messages/wallet";
@@ -35,11 +31,7 @@ import { generateSettingCommands } from "./commands/setting";
 import { getSettingKeyboard } from "./keyboards/setting";
 import { getProfitMaxConfig } from "./commands/profitMax";
 import { commandList } from "./constants";
-import {
-  LIQUIDITY_STATE_LAYOUT_V4,
-  MAINNET_PROGRAM_ID,
-  Token,
-} from "@raydium-io/raydium-sdk";
+
 import { runProfitMaxiMode } from "./utils/runProfitMaxiMode";
 
 const token: string = TELEGRAM_ACCESS_TOKEN;
