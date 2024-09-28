@@ -31,8 +31,6 @@ import { getSettingKeyboard } from "./keyboards/setting";
 import { addProfitMaxAddress, addProfitMaxPrice, addTempToList, getProfitMaxConfig, getProfitMaxTempItem, removeProfitMaxItem } from "./commands/profitMax";
 import { commandList } from "./constants";
 
-import { runProfitMaxiMode } from "./utils/runProfitMaxiMode";
-
 const token: string = TELEGRAM_ACCESS_TOKEN;
 
 export const bot = new TelegramBot(token, { polling: true });

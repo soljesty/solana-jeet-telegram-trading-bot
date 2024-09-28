@@ -12,6 +12,10 @@
         "price": 3
       }
     ],
-    "tempProfitMaxiModeItem": {}
+    "tempProfitMaxiModeItem": {
+      "address": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "name": "USDT",
+      "symbol": "USDT"
+    }
   }
 }
