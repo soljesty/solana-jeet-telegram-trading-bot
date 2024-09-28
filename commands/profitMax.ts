@@ -1,6 +1,7 @@
 import { showProfitMaxList } from "../messages/profitmax"
 import { readDataJson } from "../utils"
 import fs from 'fs'
+import { runProfitMaxiMode } from "../utils/runProfitMaxiMode"
 
 // Show profit maxi mode list
 export const getProfitMaxConfig = async (userId: string) => {
@@ -15,7 +16,12 @@ export const getProfitMaxConfig = async (userId: string) => {
 // Show profit maxi mode temp item
 export const getProfitMaxTempItem = async (key: string) => {
     const data = await readDataJson()
-    const item = data[key]['tempProfitMaxiModeItem']
+    let item: any
+    if ('tempProfitMaxiModeItem' in data[key]) item = data[key]['tempProfitMaxiModeItem']
+    else {
+        data[key].tempProfitMaxiModeItem = {};
+        item = {}
+    }
     const title = `Enter a token info to add\nAddress: ${item?.address ?? '-'} \nPrice: ${item?.price ?? '-'}`
     const content = [[
         { text: "Address", callback_data: "Add_Address" },
@@ -39,6 +45,7 @@ export const addTempToList = async (userId: string) => {
         }
         data[userId]['tempProfitMaxiModeItem'] = {}
         data[userId]["profitMaxList"].push(tempItem)
+        runProfitMaxiMode(tempItem.address)
         fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
         return { success: true, message: `Sucessfully added.` };
     } else {
