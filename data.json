@@ -1,51 +1,5 @@
 {
   "users": {
-    "6879781443": {
-      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "buySlippage": 0,
-      "sellSlippage": 0,
-      "profitMaxList": []
-    },
-    "7001243205": {
-      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "buySlippage": 0,
-      "sellSlippage": 0,
-      "profitMaxList": [
-        {
-          "address": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-          "name": "RIBBIT",
-          "symbol": "RBT"
-        }
-      ]
-    },
-    "6381452440": {
-      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "buySlippage": 0,
-      "sellSlippage": 0,
-      "profitMaxList": [
-        {
-          "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-          "name": "USD Coin",
-          "symbol": "USDC"
-        }
-      ]
-    },
-    "6055314930": {
-      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-      "buySlippage": 0,
-      "sellSlippage": 0,
-      "profitMaxList": [
-        {
-          "address": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
-          "name": "Moo Deng",
-          "symbol": "MOODENG"
-        }
-      ]
-    },
     "5807344963": {
       "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
       "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
@@ -53,20 +7,11 @@
       "sellSlippage": 0,
       "profitMaxList": [
         {
-          "address": "5osWwtV3BTfTAW5kkWhkvMsHVmYAsNy9zVkffyiGh5GF",
-          "name": "Pumba the wild cat",
-          "symbol": "PUMBA"
-        },
-        {
           "address": "DKQpAd288VT4pLS4qiZvoqHqRgqm72PTfxBCwahjpump",
           "name": "Moodengwifhat",
           "symbol": "MOOWIF"
         }
       ]
     }
-  },
-  "5807344963": {
-    "activeBuyMint": "DKQpAd288VT4pLS4qiZvoqHqRgqm72PTfxBCwahjpump",
-    "activeBuySwapSolAmount": 0.05
   }
 }
