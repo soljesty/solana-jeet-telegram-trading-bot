@@ -3,6 +3,20 @@
     "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
     "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
     "buySlippage": 234,
-    "sellSlippage": 345
+    "sellSlippage": 345,
+    "profitMaxList": []
+  },
+  "6879781443": {
+    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+    "buySlippage": 234,
+    "sellSlippage": 345,
+    "profitMaxList": [
+      {
+        "address": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+        "name": "RIBBIT",
+        "symbol": "RBT"
+      }
+    ]
   }
 }

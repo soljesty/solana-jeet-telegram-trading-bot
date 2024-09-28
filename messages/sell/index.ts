@@ -1,50 +1,52 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import TelegramBot from "node-telegram-bot-api";
-import { getTokenAccountBalance, updateData } from "../../utils";
+import { getTokenAccountBalance, updateData, } from "../../utils";
+import { getUserCacheById } from "../../controllers/user";
 import { SECRET_KEY, solConnection } from "../../config";
 import { generateSwapSellCommands } from "../../commands/sell";
-import base58 from 'bs58'
+import base58 from 'bs58';
+
 export const sellClick = async (bot: TelegramBot, chatId: number) => {
-  const secretKey: any = SECRET_KEY
-  const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey))
-  const pubKey = kp.publicKey.toBase58()
+  const secretKey: any = SECRET_KEY;
+  const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
+  const pubKey = kp.publicKey.toBase58();
+  
   bot.sendMessage(chatId, "Enter a token address to sell", { parse_mode: 'HTML' });
+  
   bot.once('message', async (msg: any) => {
     if (!msg.text) return;
-    const baseMint = msg.text
-    // await getUserCacheById(chatId.toString())
+    const baseMint = msg.text;
+
     try {
-      // check if inputted address is valid
-      const isValid: boolean = PublicKey.isOnCurve(new PublicKey(baseMint))
+      // Check if inputted address is valid
+      const isValid: boolean = PublicKey.isOnCurve(new PublicKey(baseMint));
+      if (!isValid) {
+        throw new Error("Invalid token address");
+      }
 
-      // if (poolId) {
-        let balance: any = 0;
-        await updateData(
-          chatId.toString(),
-          {
-            activeSellMint: baseMint,
-            // activeSellPoolId: poolId.toBase58()
-          }
-        )
-        if (pubKey) {
-          balance = await getTokenAccountBalance(solConnection, pubKey, baseMint)
-          // balance  = await getTokenBalance(solConnection, "Ff1EKHGqtZyWagAy6XUVBLnJFSU6CAsEuUi4G586RWe7", "2Keh7DPf2qxQ9nHUqHJ4TfufnPBEn4gcA9f1K4nXCFJG")
-          // balance  = await getTokenBalance(solConnection, pubKey, baseMint)
-        }
+      let balance: any = 0;
+      await updateData(chatId.toString(), { activeSellMint: baseMint });
 
-        let param = {
-          // poolId,
-          baseMint,
-          balance
-        }
-        console.log("param", param)
-        const { sell_title, sell_content } = await generateSwapSellCommands(param, chatId.toString())
-        bot.sendMessage(chatId, sell_title, {
-          "reply_markup": {
-            "inline_keyboard": sell_content
-          }, parse_mode: 'HTML'
-        });
-     
+      if (pubKey) {
+        balance = await getTokenAccountBalance(solConnection, pubKey, baseMint);
+      }
+
+      // Check if ProfitMax mode is active for the user
+      const userCache = await getUserCacheById(chatId.toString());
+      if (userCache.profitMaxList && userCache.profitMaxList.length > 0) {
+        // If ProfitMax is active, do not allow direct selling
+        bot.sendMessage(chatId, "ProfitMax mode is active. Selling will be managed automatically.");
+        return; // Exit the function to prevent direct selling
+      }
+
+      let param = { baseMint, balance };
+      const { sell_title, sell_content } = await generateSwapSellCommands(param, chatId.toString());
+      bot.sendMessage(chatId, sell_title, {
+        "reply_markup": {
+          "inline_keyboard": sell_content
+        }, parse_mode: 'HTML'
+      });
+
     } catch (err) {
       bot.sendMessage(chatId, "Token Address is not Valid... Try with another token!!", {
         "reply_markup": {
@@ -58,5 +60,5 @@ export const sellClick = async (bot: TelegramBot, chatId: number) => {
         parse_mode: 'HTML'
       });
     }
-  })
-}
+  });
+};

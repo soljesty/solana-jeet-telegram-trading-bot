@@ -240,40 +240,23 @@ export async function addProfitMaxItem(
   key: number
 ) {
   const data = JSON.parse(fs.readFileSync("data.json", "utf8"));
-  if (data[key]) {
-    if ("profitMaxList" in data[key]) {
-      const isDuplicate = data[key]["profitMaxList"].some(
-        (item: any) => item.address === address
-      );
-      if (isDuplicate) {
-        return {
-          success: false,
-          message: `Address <code>${address}</code> is already exist.`,
-        };
-      } else {
-        data[key]["profitMaxList"].push({ address, name, symbol });
-        fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
-        return {
-          success: true,
-          message: `Address <code>${address}</code> has been added.`,
-        };
-      }
+  if (!data[key]) {
+    return { success: false, message: `You are not registered.` };
+  }
+
+  if ("profitMaxList" in data[key]) {
+    const isDuplicate = data[key]["profitMaxList"].some((item: any) => item.address === address);
+    if (isDuplicate) {
+      return { success: false, message: `Address <code>${address}</code> already exists.` };
     } else {
-      data[key]["profitMaxList"] = [
-        {
-          address,
-          name,
-          symbol,
-        },
-      ];
+      data[key]["profitMaxList"].push({ address, name, symbol });
       fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
-      return {
-        success: true,
-        message: `Address <code>${address}</code> has been added.`,
-      };
+      return { success: true, message: `Address <code>${address}</code> has been added.` };
     }
   } else {
-    return { success: false, message: `You are not registered.` };
+    data[key]["profitMaxList"] = [{ address, name, symbol }];
+    fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
+    return { success: true, message: `Address <code>${address}</code> has been added.` };
   }
 }
 

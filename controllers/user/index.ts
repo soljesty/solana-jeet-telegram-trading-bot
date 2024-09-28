@@ -13,8 +13,8 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { publicKey } from "@raydium-io/raydium-sdk";
 
 export const getUserCacheById = async (userId: string) => {
-  const data: any = await readDataJson()
-  return data[userId]
+  const data: any = await readDataJson();
+  return data[userId];
 }
 
 export const buyAmount = async (buyAmount: number, userId: string, kp: Keypair, isAmountSpecific?: boolean) => {
