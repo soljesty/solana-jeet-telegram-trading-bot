@@ -2,9 +2,8 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import UserModel from "../../models/UserModel";
 import TelegramBot, { Message } from 'node-telegram-bot-api';
 import base58 from 'bs58'
-
 import { buy, buyWithJupiter, sell, sellWithJupiter } from "../../utils/trade";
-import { getActiveWallet, getTokenAccountBalance, readDataJson, updateData } from "../../utils";
+import { getTokenAccountBalance, readDataJson, updateData } from "../../utils";
 import { solConnection, UserCache } from "../../config";
 import { IUserCache } from "../../utils/types";
 import LimitOrderModel from "../../models/LimitOrderModal";

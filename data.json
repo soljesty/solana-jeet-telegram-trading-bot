@@ -1,22 +1,24 @@
 {
-  "5807344963": {
-    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "buySlippage": 234,
-    "sellSlippage": 345,
-    "profitMaxList": []
-  },
-  "6879781443": {
-    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "buySlippage": 234,
-    "sellSlippage": 345,
-    "profitMaxList": [
-      {
-        "address": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-        "name": "RIBBIT",
-        "symbol": "RBT"
-      }
-    ]
+  "users": {
+    "6879781443": {
+      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "buySlippage": 0,
+      "sellSlippage": 0,
+      "profitMaxList": []
+    },
+    "7001243205": {
+      "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+      "buySlippage": 0,
+      "sellSlippage": 0,
+      "profitMaxList": [
+        {
+          "address": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+          "name": "RIBBIT",
+          "symbol": "RBT"
+        }
+      ]
+    }
   }
 }

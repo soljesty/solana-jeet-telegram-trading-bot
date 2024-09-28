@@ -20,6 +20,8 @@ import fs from "fs";
 import { sendAndConfirmTransaction } from "@solana/web3.js";
 import { LIQUIDITY_STATE_LAYOUT_V4 } from "@raydium-io/raydium-sdk";
 
+const dataFilePath = '../data.json';
+
 interface Blockhash {
   blockhash: string;
   lastValidBlockHeight: number;
@@ -29,75 +31,22 @@ export const isVariableExisting = (data: any, property: string) => {
   return data && data[property] !== undefined;
 };
 
-export const execute = async (
-  transaction: VersionedTransaction,
-  latestBlockhash: Blockhash,
-  isBuy: boolean = true
-) => {
-  console.log("executing...");
-  const signature = await solConnection.sendRawTransaction(
-    transaction.serialize(),
-    { skipPreflight: true }
-  );
-  console.log("signature", signature);
-  const confirmation = await solConnection.confirmTransaction({
-    signature,
-    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    blockhash: latestBlockhash.blockhash,
-  });
-
-  if (confirmation.value.err) {
-    console.log("Confirmation error");
-    return "";
-  } else {
-    if (isBuy)
-      console.log(
-        `Success in buy transaction: https://solscan.io/tx/${signature}`
-      );
-    else
-      console.log(
-        `Success in Sell transaction: https://solscan.io/tx/${signature}`
-      );
+export const readDataJson = () => {
+  if (!fs.existsSync(dataFilePath)) {
+    fs.writeFileSync(dataFilePath, JSON.stringify({ users: {} }), "utf-8");
   }
-  return signature;
+  return JSON.parse(fs.readFileSync(dataFilePath, "utf-8"));
 };
 
-export const executeVersionedTx = async (transaction: VersionedTransaction) => {
-  console.log("calling executeVersionedTx...");
-  const latestBlockhash = await solConnection.getLatestBlockhash();
-  const signature = await solConnection.sendRawTransaction(
-    transaction.serialize(),
-    { skipPreflight: true }
-  );
-
-  const confirmation = await solConnection.confirmTransaction({
-    signature,
-    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    blockhash: latestBlockhash.blockhash,
-  });
-
-  if (confirmation.value.err) {
-    console.log("Confrimtaion error");
-    return "";
-  } else {
-    console.log(
-      `Confrimed transaction: https://solscan.io/tx/${signature}${
-        CLUSTER === "devnet" ? "?cluster=devnet" : ""
-      }`
-    );
+export const updateUser = (userId: string, updates: any) => {
+  const data = readDataJson();
+  if (data.users[userId]) {
+    Object.assign(data.users[userId], updates);
+    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), "utf-8");
+    return { success: true, message: "User data updated." };
   }
-  return signature;
+  return { success: false, message: "User not found." };
 };
-
-export async function fetchImage(uri: string) {
-  try {
-    const response = await axios.get(uri, { timeout: 3000 }); // Adjust timeout based on typical response times
-    return response.data.image;
-  } catch (error: any) {
-    console.log("Error fetching image:", error.message || error.code);
-    return "https://image-optimizer.jpgstoreapis.com/37d60fa1-bca9-4082-868f-5e081600ea3b?width=600";
-  }
-}
 
 export async function getTokenAccountBalance(
   connection: Connection,
@@ -237,24 +186,27 @@ export async function addProfitMaxItem(
   address: string,
   name: string,
   symbol: string,
-  key: number
+  key: string // Change this to string
 ) {
   const data = JSON.parse(fs.readFileSync("data.json", "utf8"));
-  if (!data[key]) {
+  
+  // Check if the user exists in the data
+  if (!data.users[key]) { // Check against the string key
     return { success: false, message: `You are not registered.` };
   }
 
-  if ("profitMaxList" in data[key]) {
-    const isDuplicate = data[key]["profitMaxList"].some((item: any) => item.address === address);
+  // Now we can safely check for profitMaxList
+  if ("profitMaxList" in data.users[key]) {
+    const isDuplicate = data.users[key]["profitMaxList"].some((item: any) => item.address === address);
     if (isDuplicate) {
       return { success: false, message: `Address <code>${address}</code> already exists.` };
     } else {
-      data[key]["profitMaxList"].push({ address, name, symbol });
+      data.users[key]["profitMaxList"].push({ address, name, symbol });
       fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
       return { success: true, message: `Address <code>${address}</code> has been added.` };
     }
   } else {
-    data[key]["profitMaxList"] = [{ address, name, symbol }];
+    data.users[key]["profitMaxList"] = [{ address, name, symbol }];
     fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
     return { success: true, message: `Address <code>${address}</code> has been added.` };
   }
@@ -290,33 +242,6 @@ export async function removeProfitMaxItem(address: string, key: number) {
     }
   } else {
     return { success: false, message: `You are not registered.` };
-  }
-}
-
-export const sleep = async (ms: number) => {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-export async function readDataJson(filename: string = "data.json") {
-  if (!fs.existsSync(filename)) {
-    // If the file does not exist, create an empty array
-    fs.writeFileSync(filename, "[]", "utf-8");
-  }
-  const data = fs.readFileSync(filename, "utf-8");
-  return JSON.parse(data);
-}
-
-export async function getActiveWallet(chatId: string) {
-  console.log("calling getActiveWallet....");
-  const data: any = await readDataJson();
-  if (Object.keys(data).length === 0) {
-    return;
-  } else {
-    if (data[chatId]) {
-      return data[chatId]["activeWallet"];
-    } else {
-      return;
-    }
   }
 }
 
@@ -376,6 +301,76 @@ export const convertToMilliseconds = (input: string) => {
   return value * conversions[unit];
 };
 
+export const execute = async (
+  transaction: VersionedTransaction,
+  latestBlockhash: Blockhash,
+  isBuy: boolean = true
+) => {
+  console.log("executing...");
+  const signature = await solConnection.sendRawTransaction(
+    transaction.serialize(),
+    { skipPreflight: true }
+  );
+  console.log("signature", signature);
+  const confirmation = await solConnection.confirmTransaction({
+    signature,
+    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    blockhash: latestBlockhash.blockhash,
+  });
+
+  if (confirmation.value.err) {
+    console.log("Confirmation error");
+    return "";
+  } else {
+    if (isBuy)
+      console.log(
+        `Success in buy transaction: https://solscan.io/tx/${signature}`
+      );
+    else
+      console.log(
+        `Success in Sell transaction: https://solscan.io/tx/${signature}`
+      );
+  }
+  return signature;
+};
+
+export const executeVersionedTx = async (transaction: VersionedTransaction) => {
+  console.log("calling executeVersionedTx...");
+  const latestBlockhash = await solConnection.getLatestBlockhash();
+  const signature = await solConnection.sendRawTransaction(
+    transaction.serialize(),
+    { skipPreflight: true }
+  );
+
+  const confirmation = await solConnection.confirmTransaction({
+    signature,
+    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    blockhash: latestBlockhash.blockhash,
+  });
+
+  if (confirmation.value.err) {
+    console.log("Confrimtaion error");
+    return "";
+  } else {
+    console.log(
+      `Confrimed transaction: https://solscan.io/tx/${signature}${
+        CLUSTER === "devnet" ? "?cluster=devnet" : ""
+      }`
+    );
+  }
+  return signature;
+};
+
+export async function fetchImage(uri: string) {
+  try {
+    const response = await axios.get(uri, { timeout: 3000 }); // Adjust timeout based on typical response times
+    return response.data.image;
+  } catch (error: any) {
+    console.log("Error fetching image:", error.message || error.code);
+    return "https://image-optimizer.jpgstoreapis.com/37d60fa1-bca9-4082-868f-5e081600ea3b?width=600";
+  }
+}
+
 export const sendSOL = async (
   connection: Connection,
   senderKp: Keypair,
@@ -400,6 +395,7 @@ export const sendSOL = async (
   );
   return signature;
 };
+
 
 export const getVaultAddress = async (baseMint: string) => {
   const RAYDIUM_AMM_PROGRAM_ID = new PublicKey(
@@ -438,4 +434,8 @@ export const getVaultAddress = async (baseMint: string) => {
 
   const { baseVault, quoteVault } = marketData;
   return { baseVault, quoteVault }
+};
+
+export const sleep = async (ms: number) => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 };

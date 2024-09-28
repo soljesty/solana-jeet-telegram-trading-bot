@@ -52,14 +52,16 @@ if (bot) {
   console.log("Telegram bot is running");
 }
 
+
 bot.on("message", async (msg: Message) => {
   const chatId = msg.chat.id;
   const name = msg.chat.first_name;
   const username = msg.chat.username;
-  const userId = msg.from?.id;
+  const userId = msg.from?.id; // userId is now a number
 
   if (!userId) return;
 });
+
 
 // home commands
 bot.onText(/\/home/, async (msg: Message) => {
@@ -68,21 +70,24 @@ bot.onText(/\/home/, async (msg: Message) => {
     const secretKey: any = SECRET_KEY;
     const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
     const pubKey = kp.publicKey.toBase58();
-    const { title, content } = await welcome(pubKey);
+    const userId = msg.from?.id ?? 0; // Ensure userId is a number, default to 0 if undefined
+    const { title, content } = await welcome(pubKey, userId); // Pass userId
     bot.sendMessage(msg.chat.id, title, {
       reply_markup: {
         inline_keyboard: content,
       },
-      parse_mode: "HTML",
+      parse_mode: "Markdown",
     });
   } catch (err) {}
 });
+
 
 // test
 bot.onText(/\/test/, async (msg: Message) => {
   try {
   } catch (err) {}
 });
+
 
 // start commands
 bot.onText(/\/start/, async (msg: Message) => {
@@ -91,15 +96,17 @@ bot.onText(/\/start/, async (msg: Message) => {
     const secretKey: any = SECRET_KEY;
     const kp: Keypair = Keypair.fromSecretKey(base58.decode(secretKey));
     const pubKey = kp.publicKey.toBase58();
-    const { title, content } = await welcome(pubKey);
+    const userId = msg.from?.id ?? 0; // Ensure userId is a number, default to 0 if undefined
+    const { title, content } = await welcome(pubKey, userId); // Pass userId
     bot.sendMessage(msg.chat.id, title, {
       reply_markup: {
         inline_keyboard: content,
       },
-      parse_mode: "HTML",
+      parse_mode: "Markdown",
     });
   } catch (err) {}
 });
+
 
 // go to buy commands
 bot.onText(/\/buy/, async (msg: Message) => {
@@ -107,20 +114,22 @@ bot.onText(/\/buy/, async (msg: Message) => {
   await buyClick(bot, chatId);
 });
 
+
 // go to sell commands
 bot.onText(/\/sell/, async (msg: Message) => {
   const chatId = msg.chat.id;
   await sellClick(bot, chatId);
 });
 
+
 // go to wallet commands
 bot.onText(/\/wallet/, async (msg: Message) => {
   try {
     const chatId = msg.chat.id;
-
-    await walletClick(bot, chatId); //
+    await walletClick(bot, chatId);
   } catch (err) {}
 });
+
 
 // go to setting commands
 bot.onText(/\/settings/, async (msg: Message) => {
@@ -133,10 +142,11 @@ bot.onText(/\/settings/, async (msg: Message) => {
       reply_markup: {
         inline_keyboard: setting_content,
       },
-      parse_mode: "HTML",
+      parse_mode: "Markdown",
     });
   } catch (err) {}
 });
+
 
 // go to auto buy commands
 bot.onText(/\/autobuy/, async (msg: Message) => {
@@ -145,6 +155,7 @@ bot.onText(/\/autobuy/, async (msg: Message) => {
     await buyClick(bot, chatId);
   } catch (err) {}
 });
+
 
 // Listen for callback queries
 bot.on("callback_query", async (callbackQuery) => {
@@ -156,8 +167,8 @@ bot.on("callback_query", async (callbackQuery) => {
 
     // Log the clicked button data
     console.log("Button clicked:", data);
-    const userId: number | undefined = message.from?.id;
-    const chatId: number | undefined = message.chat?.id;
+    const userId: number | undefined = message.from?.id; // Ensure userId is retrieved correctly
+    const chatId: string | undefined = message.chat?.id.toString(); // Convert chatId to string
     const messageId = message.message_id;
     const name = message.chat.first_name;
     const username = message.chat.username;
@@ -174,7 +185,7 @@ bot.on("callback_query", async (callbackQuery) => {
     // go wallet
     if (data === "Wallet") {
       if (pubKey) {
-        await walletClick(bot, chatId);
+        await walletClick(bot, parseInt(chatId, 10));
       }
     }
 
@@ -234,11 +245,11 @@ bot.on("callback_query", async (callbackQuery) => {
         try {
           const { success, message } = await removeProfitMaxItem(
             address,
-            chatId
+            parseInt(chatId)
           );
           bot.sendMessage(
             chatId,
-            success == true
+            success
               ? `Successfully Removed. ${message}`
               : `Removed failed. ${message}`,
             {
@@ -322,11 +333,11 @@ bot.on("callback_query", async (callbackQuery) => {
             {
               reply_markup: {
                 inline_keyboard: [
-                  [
-                    { text: "Try Again", callback_data: "Add_Profit" },
-                    { text: "Cancel", callback_data: "Delete" },
+                    [
+                      { text: "Try Again", callback_data: "Add_Profit" },
+                      { text: "Cancel", callback_data: "Delete" },
+                    ],
                   ],
-                ],
               },
               parse_mode: "HTML",
             }
@@ -363,49 +374,11 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
       });
     }
 
-    // get my wallet assets
-    if (data === "Wallet_Assets") {
-      if (pubKey) {
-        const tokens = await getMyTokens(new PublicKey(pubKey));
-        let totalPrice: number = 0;
-        if (tokens) {
-          let txt = ``;
-          for (
-            let i = 0;
-            i < (tokens?.length > 15 ? 15 : tokens?.length);
-            i++
-          ) {
-            totalPrice += tokens[i].price * tokens[i].balance;
-            txt += `
-          CA: <code>${tokens[i].mintAddress}</code>
-          name: ${tokens[i].name}
-          symbol: $${tokens[i].symbol}
-          decimals: ${tokens[i].decimals}
-          supply: ${tokens[i].supply}
-          balance: ${tokens[i].balance}
-          value: ${tokens[i].price * tokens[i].balance}
-          `;
-          }
-
-          console.log("txt", txt);
-
-          bot.sendMessage(
-            chatId,
-            `Your Tokens:
-          Total Value: ${totalPrice}
-          ${txt}
-          `,
-            { parse_mode: "HTML" }
-          );
-        }
-      }
-    }
-
     /******************************************************************/
     /*************************** Swap Buy *****************************/
     /******************************************************************/
     if (data === "Buy") {
-      await buyClick(bot, chatId);
+      await buyClick(bot, parseInt(chatId));
     }
 
     if (data === "SWAP_BUY_X") {
@@ -505,7 +478,7 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
     /*************************** Swap Sell ****************************/
     /******************************************************************/
     if (data === "Sell") {
-      await sellClick(bot, chatId);
+      await sellClick(bot, parseInt(chatId));
     }
     if (data === "Swap_Sell") {
       await bot.editMessageReplyMarkup(
@@ -632,7 +605,7 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
     }
 
     /******************************************************************/
-    /*************************** Setting Dashboard ****************************/
+    /*************************** Setting Dashboard ********************/
     /******************************************************************/
     if (data === "Setting_Dashboard") {
       const { setting_title, setting_content } = await generateSettingCommands(
@@ -748,6 +721,7 @@ This message should auto-delete in 1 minute. If not, delete this message once yo
     console.log("err", err);
   }
 });
+
 
 export async function readJson(filename: string = "user.json") {
   if (!fs.existsSync(filename)) {

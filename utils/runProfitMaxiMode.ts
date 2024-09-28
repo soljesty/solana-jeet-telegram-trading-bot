@@ -1,5 +1,5 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { getVaultAddress, sleep } from ".";
+import { sleep } from ".";
 import { SECRET_KEY, solConnection } from "../config";
 import { getTokenPriceFromJupiterByTokenMint } from "./token";
 import base58 from "bs58";
@@ -113,3 +113,7 @@ export const runProfitMaxiMode = async (tokenMintCA: string) => {
     );
   } catch (err) {}
 };
+function getVaultAddress(tokenMintCA: string): { baseVault: any; } | PromiseLike<{ baseVault: any; }> {
+  throw new Error("Function not implemented.");
+}
+

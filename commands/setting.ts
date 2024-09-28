@@ -1,4 +1,5 @@
 import { getSettingKeyboard } from "../keyboards/setting"
+import TelegramBot from "node-telegram-bot-api";
 
 export const generateSettingCommands = async (userId: string) => {
   const setting_title = `
@@ -38,3 +39,49 @@ Show the Dexscreener chart preview of a selected token. Tap to toggle.
     setting_title, setting_content
   }
 }
+
+export const settingsClick = async (bot: TelegramBot, chatId: number) => {
+  const title = "Settings Menu";
+  const content = [
+    [
+      { text: "Enable Auto Buy", callback_data: "Enable_Auto_Buy" },
+      { text: "Disable Auto Buy", callback_data: "Disable_Auto_Buy" },
+    ],
+    [
+      { text: "Back to Menu", callback_data: "Back_To_Menu" },
+    ],
+  ];
+
+  bot.sendMessage(chatId, title, {
+    reply_markup: {
+      inline_keyboard: content,
+    },
+    parse_mode: "HTML",
+  });
+};
+
+export const pinClick = async (bot: TelegramBot, chatId: number) => {
+  const title = "Pin Menu";
+  const content = [
+    [
+      { text: "Pin Current Message", callback_data: "Pin_Current_Message" },
+      { text: "Unpin Current Message", callback_data: "Unpin_Current_Message" },
+    ],
+    [
+      { text: "Back to Menu", callback_data: "Back_To_Menu" },
+    ],
+  ];
+
+  bot.sendMessage(chatId, title, {
+    reply_markup: {
+      inline_keyboard: content,
+    },
+    parse_mode: "HTML",
+  });
+};
+
+export const refreshClick = async (bot: TelegramBot, chatId: number) => {
+  const title = "Refreshing your data...";
+  bot.sendMessage(chatId, title, { parse_mode: "HTML" });
+  // Logic to refresh user data can be added here
+};

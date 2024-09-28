@@ -13,7 +13,6 @@ interface ProfitType {
 
 export const showProfitMaxList = (info: ProfitType[] | undefined) => {
   let title = "Profit Maxi Mode List";
-  console.log(info);
   const content = [
     [
       { text: "Add", callback_data: "Add_Profit" },
@@ -22,14 +21,11 @@ export const showProfitMaxList = (info: ProfitType[] | undefined) => {
     ],
   ];
 
-  if (info)
-    info.map((item, idx) => {
-      title += `
-
-#${idx}
-    Address: ${item.address}
-    Name: ${item.name}`;
+  if (info) {
+    info.forEach((item, idx) => {
+      title += `\n\n#${idx}\nAddress: ${item.address}\nName: ${item.name}`;
     });
+  }
 
   return { title, content };
 };
