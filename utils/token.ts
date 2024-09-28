@@ -6,7 +6,7 @@ import { TokenMetadata } from "./types";
 import { TOKEN_PROGRAM_ID } from "@raydium-io/raydium-sdk";
 import { AccountLayout, getMint } from "@solana/spl-token";
 import { getMetadataAccountDataSerializer } from "@metaplex-foundation/mpl-token-metadata";
-import { fetchImage } from ".";
+import { fetchImage, getTokenPriceFromDexScreener } from ".";
 import axios from "axios";
 
 export async function getTokenData(mint: string): Promise<TokenMetadata> {
@@ -177,3 +177,27 @@ export const getMyTokens = async (walletPubKey: PublicKey) => {
     console.error("Error fetching tokens:", error);
   }
 };
+
+
+export const getTokenPriceFromJupiterByTokenMint = async (baseMint: string) => {
+  try{
+    let price: number  = 0;
+    const response = await fetch(
+      `https://price.jup.ag/v6/price?ids=${baseMint}&vsToken=So11111111111111111111111111111111111111112`
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+    const data: any = await response.json();
+  
+    if (Object.keys(data.data).length === 0) {
+      price = 0;
+    } else {
+      // console.log("haha", data.data[mintAddress.toBase58()].price)
+      price = data.data[baseMint].price;
+    }
+    return price;
+  }catch(err){
+    return 0;
+  }
+}

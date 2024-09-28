@@ -11,10 +11,10 @@ export const MONGO_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env
 
 export const CLUSTER: string = 'mainnet'
 
-export const RPC_MAINNET_URL = 'https://solana-mainnet.core.chainstack.com/20c12b1c8ce6fc5aa83b1b79897a115e'
+export const RPC_MAINNET_URL = 'https://powerful-orbital-aura.solana-mainnet.quiknode.pro/8f6897f97a5babf372da3f3c4f9170cfccdc1fb2'
 export const RPC_DEVNET_URL = 'https://api.devnet.solana.com'
 
-export const RPC_WEBSOCKET_URL = 'wss://solana-mainnet.core.chainstack.com/20c12b1c8ce6fc5aa83b1b79897a115e'
+export const RPC_WEBSOCKET_URL = 'wss://powerful-orbital-aura.solana-mainnet.quiknode.pro/8f6897f97a5babf372da3f3c4f9170cfccdc1fb2'
 // export const solConnection: any = new Connection(RPC_MAINNET_URL, { wss: RPC_WEBSOCKET_URL }
 // );
 

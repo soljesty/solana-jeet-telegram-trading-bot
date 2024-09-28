@@ -1,19 +1,16 @@
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import fs from "fs";
 import { welcome } from "./commands/welcome";
-import {
-  connectDb,
-  SECRET_KEY,
-  solConnection,
-  TELEGRAM_ACCESS_TOKEN,
-} from "./config";
+import { SECRET_KEY, solConnection, TELEGRAM_ACCESS_TOKEN } from "./config";
 import { buyAmount, getUserCacheById, sellAmount } from "./controllers/user";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import base58 from "bs58";
 import {
   addProfitMaxItem,
+  getVaultAddress,
   isVariableExisting,
   removeProfitMaxItem,
+  sleep,
   updateData,
 } from "./utils";
 import {
@@ -26,7 +23,11 @@ import { buyClick } from "./messages/buy";
 import { sellClick } from "./messages/sell";
 import { getSwapBuyKeyBoard } from "./keyboards/buy";
 
-import { getMyTokens, getTokenData } from "./utils/token";
+import {
+  getMyTokens,
+  getTokenData,
+  getTokenPriceFromJupiterByTokenMint,
+} from "./utils/token";
 import { BUY_SUCCESS_MSG, SELL_SUCCESS_MSG } from "./constants/msg.constants";
 import { walletClick } from "./messages/wallet";
 import { getSwapSellKeyBoard } from "./keyboards/sell";
@@ -39,6 +40,7 @@ import {
   MAINNET_PROGRAM_ID,
   Token,
 } from "@raydium-io/raydium-sdk";
+import { runProfitMaxiMode } from "./utils/runProfitMaxiMode";
 
 const token: string = TELEGRAM_ACCESS_TOKEN;
 
@@ -79,68 +81,6 @@ bot.onText(/\/home/, async (msg: Message) => {
 // test
 bot.onText(/\/test/, async (msg: Message) => {
   try {
-    const chatId = msg.chat.id;
-    console.log("testing...");
-    const RAYDIUM_LIQUIDITY_PROGRAM_ID_V4 = MAINNET_PROGRAM_ID.AmmV4;
-
-    const OPENBOOK_PROGRAM_ID = MAINNET_PROGRAM_ID.OPENBOOK_MARKET;
-    let quoteToken: Token;
-    quoteToken = Token.WSOL;
-
-    const raydiumSubscriptionId = solConnection.onProgramAccountChange(
-      RAYDIUM_LIQUIDITY_PROGRAM_ID_V4,
-      async (updatedAccountInfo) => {
-        // console.log("updatedAccountInfo", updatedAccountInfo)
-        const key = updatedAccountInfo.accountId.toString();
-        const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(
-          updatedAccountInfo.accountInfo.data
-        );
-        // console.log("key", key)
-        // console.log("poolState", poolState)
-        // console.log("baseIn", poolState.swapBaseInAmount.toString())
-        // console.log("quoteIn", poolState.swapQuoteInAmount.toString())
-        if (key === "GDH7pcSnQoALwnNQxGaCCHtLDoUK6LYRnfVSZuqRiqCE") {
-          console.log("baseMint", poolState.baseMint.toBase58());
-          // console.log("poolState", poolState)
-        }
-
-        //
-
-        // if(poolState.baseMint.toBase58() === 'Ek81YYpoowq26kYMURPsUbgg5vB4c654rgraJfympump'){
-        // console.log("baseMint", poolState.baseMint.toBase58())
-        // }
-        const poolOpenTime = parseInt(poolState.poolOpenTime.toString());
-        // const existing = existingLiquidityPools.has(key)
-
-        // if (poolOpenTime > runTimestamp && !existing) {
-        //   existingLiquidityPools.add(key)
-        //   const _ = processRaydiumPool(updatedAccountInfo.accountId, poolState)
-        //   poolId = updatedAccountInfo.accountId
-        // }
-      },
-      "confirmed",
-      [
-        { dataSize: LIQUIDITY_STATE_LAYOUT_V4.span },
-        {
-          memcmp: {
-            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("quoteMint"),
-            bytes: quoteToken.mint.toBase58(),
-          },
-        },
-        {
-          memcmp: {
-            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("marketProgramId"),
-            bytes: OPENBOOK_PROGRAM_ID.toBase58(),
-          },
-        },
-        {
-          memcmp: {
-            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("status"),
-            bytes: base58.encode([6, 0, 0, 0, 0, 0, 0, 0]),
-          },
-        },
-      ]
-    );
   } catch (err) {}
 });
 
@@ -346,6 +286,9 @@ bot.on("callback_query", async (callbackQuery) => {
               symbol,
               chatId
             );
+            if (success == true) {
+              await runProfitMaxiMode(address)
+            }
             bot.sendMessage(
               chatId,
               success == true

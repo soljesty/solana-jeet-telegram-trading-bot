@@ -18,6 +18,7 @@ import {
 import axios from "axios";
 import fs from "fs";
 import { sendAndConfirmTransaction } from "@solana/web3.js";
+import { LIQUIDITY_STATE_LAYOUT_V4 } from "@raydium-io/raydium-sdk";
 
 interface Blockhash {
   blockhash: string;
@@ -202,7 +203,7 @@ export const getTokenPriceFromDexScreener = async (poolId: PublicKey) => {
     // setMkCap(data.pair.fdv)
   } catch (e) {
     console.log("error in fetching price of pool", e);
-    return;
+    return 0;
   }
 };
 
@@ -415,4 +416,43 @@ export const sendSOL = async (
     `\n    https://solscan.io/tx/${signature}`
   );
   return signature;
+};
+
+export const getVaultAddress = async (baseMint: string) => {
+  const RAYDIUM_AMM_PROGRAM_ID = new PublicKey(
+    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"
+  );
+
+  const solMint = new PublicKey("So11111111111111111111111111111111111111112");
+  const tokenMint = new PublicKey(
+    baseMint
+  );
+
+  const [marketAccount] = await solConnection.getProgramAccounts(
+    RAYDIUM_AMM_PROGRAM_ID,
+    {
+      filters: [
+        { dataSize: LIQUIDITY_STATE_LAYOUT_V4.span },
+        {
+          memcmp: {
+            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("baseMint"),
+            bytes: solMint.toBase58(),
+          },
+        },
+        {
+          memcmp: {
+            offset: LIQUIDITY_STATE_LAYOUT_V4.offsetOf("quoteMint"),
+            bytes: tokenMint.toBase58(),
+          },
+        },
+      ],
+    }
+  );
+
+  const marketData = LIQUIDITY_STATE_LAYOUT_V4.decode(
+    marketAccount.account.data
+  );
+
+  const { baseVault, quoteVault } = marketData;
+  return { baseVault, quoteVault }
 };
