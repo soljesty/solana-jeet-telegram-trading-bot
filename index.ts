@@ -30,6 +30,7 @@ import { generateSettingCommands } from "./commands/setting";
 import { getSettingKeyboard } from "./keyboards/setting";
 import { addProfitMaxAddress, addProfitMaxPrice, addTempToList, getProfitMaxConfig, getProfitMaxTempItem, removeProfitMaxItem } from "./commands/profitMax";
 import { commandList } from "./constants";
+import { runProfitMaxiMode } from "./utils/runProfitMaxiMode";
 
 const token: string = TELEGRAM_ACCESS_TOKEN;
 
@@ -319,6 +320,7 @@ bot.on("callback_query", async (callbackQuery) => {
               chatId
             );
             if (success == true) {
+              
               const item = await getProfitMaxTempItem(chatId)
               bot.sendMessage(chatId, item.title, {
                 reply_markup: {
@@ -432,16 +434,20 @@ bot.on("callback_query", async (callbackQuery) => {
     if (data == 'Temp_To_List') {
       try {
         const data = await addTempToList(chatId)
-        bot.sendMessage(chatId, data.message, {
-          reply_markup: {
-            inline_keyboard: [[{ text: "Close", callback_data: "Delete" }]]
-          },
-          parse_mode: "HTML",
-        });
+        if(data.success){
+          await runProfitMaxiMode(data.address)
+          bot.sendMessage(chatId, data.message, {
+            reply_markup: {
+              inline_keyboard: [[{ text: "Close", callback_data: "Delete" }]]
+            },
+            parse_mode: "HTML",
+          });
+        }
+        
       } catch (err) {
         bot.sendMessage(
           chatId,
-          "Faild... Please try again!!",
+          "Failed... Please try again!!",
           {
             reply_markup: {
               inline_keyboard: [

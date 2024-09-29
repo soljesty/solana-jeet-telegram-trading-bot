@@ -5,7 +5,7 @@ import { getTokenPriceFromJupiterByTokenMint } from "./token";
 import base58 from "bs58";
 import { sellWithJupiter } from "./trade";
 export const runProfitMaxiMode = async (
-  tokenMintCA: string,
+  tokenMintCA: string
   // expPrice: number
 ) => {
   try {
@@ -20,7 +20,7 @@ export const runProfitMaxiMode = async (
         if (err) {
           console.log(err);
         } else {
-          await sleep(5000);
+          await sleep(2000);
           try {
             const parsedData = await solConnection.getParsedTransaction(
               signature,
@@ -99,15 +99,15 @@ export const runProfitMaxiMode = async (
               console.log("dTokenBal", dTokenBal);
               if (dTokenBal < 0) {
                 // if (price > expPrice) {
-                  console.log("==============================");
-                  console.log("buy Amount:", dTokenBal);
-                  // console.log("price: ", price);
-
-                  await sellWithJupiter(
-                    kp,
-                    new PublicKey(tokenMintCA),
-                    Math.abs(dTokenBal)
-                  );
+                console.log(`===================   PROFIT MAXI MODE SELL   ================== \n
+                    TOKEN CA: ${tokenMintCA}
+                    BUY AMOUNT: ${Math.abs(dTokenBal)}
+                `);
+                await sellWithJupiter(
+                  kp,
+                  new PublicKey(tokenMintCA),
+                  Math.abs(dTokenBal)
+                );
                 // }
               }
             }

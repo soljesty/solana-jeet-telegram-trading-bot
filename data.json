@@ -1,10 +1,12 @@
 {
   "5807344963": {
-    "activeBuyMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
-    "activeSellMint": "65nTNuJGHme4PQvKQyJykKp1bJAkK4A8Q66sd2yBWugf",
+    "activeBuyMint": "DKQpAd288VT4pLS4qiZvoqHqRgqm72PTfxBCwahjpump",
+    "activeSellMint": "5osWwtV3BTfTAW5kkWhkvMsHVmYAsNy9zVkffyiGh5GF",
     "buySlippage": 0,
     "sellSlippage": 0,
     "profitMaxList": [],
-    "tempProfitMaxiModeItem": {}
+    "tempProfitMaxiModeItem": {},
+    "activeSellSwapPercent": 50,
+    "activeBuySwapSolAmount": 0.01
   }
 }
