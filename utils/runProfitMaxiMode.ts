@@ -1,7 +1,6 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { getVaultAddress, sleep } from ".";
 import { SECRET_KEY, solConnection } from "../config";
-import { getTokenPriceFromJupiterByTokenMint } from "./token";
 import base58 from "bs58";
 import { sellWithJupiter } from "./trade";
 export const runProfitMaxiMode = async (
@@ -33,8 +32,6 @@ export const runProfitMaxiMode = async (
             const postTokenBal = parsedData?.meta?.postTokenBalances;
             const preTokenBal = parsedData?.meta?.preTokenBalances;
 
-            const accounts = parsedData?.transaction.message.accountKeys;
-            const buyer = accounts![0].pubkey.toBase58();
             const IS_AMM = true;
 
             if (postTokenBal && preTokenBal) {
