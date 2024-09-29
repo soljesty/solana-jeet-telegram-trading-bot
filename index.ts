@@ -364,69 +364,69 @@ bot.on("callback_query", async (callbackQuery) => {
       });
     }
 
-    // Input price to added to profit maxi mode temp list
-    if (data == 'Add_Price') {
-      bot.sendMessage(chatId, `Enter a token Address to add `, {
-        parse_mode: "HTML",
-      });
+    // // Input price to added to profit maxi mode temp list
+    // if (data == 'Add_Price') {
+    //   bot.sendMessage(chatId, `Enter a token Address to add `, {
+    //     parse_mode: "HTML",
+    //   });
 
-      bot.once("message", async (msg: any) => {
-        if (!msg.text) return;
-        const price = msg.text;
+    //   bot.once("message", async (msg: any) => {
+    //     if (!msg.text) return;
+    //     const price = msg.text;
 
-        try {
-          const isValid: boolean = Number(price) > 0
-          console.log("isValid", isValid);
-          if (isValid) {
-            const { success, message } = await addProfitMaxPrice(
-              Number(price),
-              chatId
-            );
-            if (success == true) {
-              const item = await getProfitMaxTempItem(chatId)
-              bot.sendMessage(chatId, item.title, {
-                reply_markup: {
-                  inline_keyboard: item.content
-                },
-                parse_mode: "HTML",
-              });
-            }
-          } else {
-            bot.sendMessage(
-              chatId,
-              "Token Price is not Valid... Try with another number!!",
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      { text: "Try Again", callback_data: "Add_Price" },
-                      { text: "Cancel", callback_data: "Delete" },
-                    ],
-                  ],
-                },
-                parse_mode: "HTML",
-              }
-            );
-          }
-        } catch (err) {
-          bot.sendMessage(
-            chatId,
-            "Token Price is not Valid... Try with another number!!",
-            {
-              reply_markup: {
-                inline_keyboard: [
-                  [
-                    { text: "Try Again", callback_data: "Add_Price" },
-                    { text: "Cancel", callback_data: "Delete" },
-                  ],
-                ],
-              },
-              parse_mode: "HTML",
-            }
-          );
-        }
-      });
-    }
+    //     try {
+    //       const isValid: boolean = Number(price) > 0
+    //       console.log("isValid", isValid);
+    //       if (isValid) {
+    //         const { success, message } = await addProfitMaxPrice(
+    //           Number(price),
+    //           chatId
+    //         );
+    //         if (success == true) {
+    //           const item = await getProfitMaxTempItem(chatId)
+    //           bot.sendMessage(chatId, item.title, {
+    //             reply_markup: {
+    //               inline_keyboard: item.content
+    //             },
+    //             parse_mode: "HTML",
+    //           });
+    //         }
+    //       } else {
+    //         bot.sendMessage(
+    //           chatId,
+    //           "Token Price is not Valid... Try with another number!!",
+    //           {
+    //             reply_markup: {
+    //               inline_keyboard: [
+    //                 [
+    //                   { text: "Try Again", callback_data: "Add_Price" },
+    //                   { text: "Cancel", callback_data: "Delete" },
+    //                 ],
+    //               ],
+    //             },
+    //             parse_mode: "HTML",
+    //           }
+    //         );
+    //       }
+    //     } catch (err) {
+    //       bot.sendMessage(
+    //         chatId,
+    //         "Token Price is not Valid... Try with another number!!",
+    //         {
+    //           reply_markup: {
+    //             inline_keyboard: [
+    //               [
+    //                 { text: "Try Again", callback_data: "Add_Price" },
+    //                 { text: "Cancel", callback_data: "Delete" },
+    //               ],
+    //             ],
+    //           },
+    //           parse_mode: "HTML",
+    //         }
+    //       );
+    //     }
+    //   });
+    // }
 
     // Insert profit maxi mode temp list to main list
     if (data == 'Temp_To_List') {

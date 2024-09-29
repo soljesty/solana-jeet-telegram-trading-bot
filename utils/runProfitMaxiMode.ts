@@ -6,7 +6,7 @@ import base58 from "bs58";
 import { sellWithJupiter } from "./trade";
 export const runProfitMaxiMode = async (
   tokenMintCA: string,
-  expPrice: number
+  // expPrice: number
 ) => {
   try {
     console.log("RUNNING PROFIT MAXI MODE ===== CA: ", tokenMintCA);
@@ -93,22 +93,22 @@ export const runProfitMaxiMode = async (
                 }
               });
               const dTokenBal = postQuoteBal! - preQuoteBal!;
-              const price = await getTokenPriceFromJupiterByTokenMint(
-                tokenMintCA
-              );
+              // const price = await getTokenPriceFromJupiterByTokenMint(
+              //   tokenMintCA
+              // );
               console.log("dTokenBal", dTokenBal);
               if (dTokenBal < 0) {
-                if (price > expPrice) {
+                // if (price > expPrice) {
                   console.log("==============================");
                   console.log("buy Amount:", dTokenBal);
-                  console.log("price: ", price);
+                  // console.log("price: ", price);
 
                   await sellWithJupiter(
                     kp,
                     new PublicKey(tokenMintCA),
                     Math.abs(dTokenBal)
                   );
-                }
+                // }
               }
             }
           } catch (error) {
