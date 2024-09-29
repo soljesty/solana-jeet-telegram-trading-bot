@@ -18,7 +18,8 @@ export const showProfitMaxList = (info: ProfitType[] | undefined) => {
 
   if (info) {
     info.forEach((item, idx) => {
-      title += `\n\nAddress: ${item.address}\n   Name: ${item.name}\n   Symbol: ${item.symbol}   Price: ${item.price}`;
+      // title += `\n\nAddress: ${item.address}\n   Name: ${item.name}\n   Symbol: ${item.symbol}\n   Price: ${item.price}`;
+      title += `\n\nAddress: ${item.address}\n   Name: ${item.name}\n   Symbol: ${item.symbol}`;
     });
   }
 

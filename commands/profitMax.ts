@@ -22,12 +22,14 @@ export const getProfitMaxTempItem = async (key: string) => {
         data[key].tempProfitMaxiModeItem = {};
         item = {}
     }
-    const title = `Enter a token info to add\nAddress: ${item?.address ?? '-'} \nPrice: ${item?.price ?? '-'}`
+    // const title = `Enter a token info to add\nAddress: ${item?.address ?? '-'} \nPrice: ${item?.price ?? '-'}`
+    const title = `Enter a token info to add\nAddress: ${item?.address ?? '-'}`
     const content = [[
         { text: "Address", callback_data: "Add_Address" },
-        { text: "Price", callback_data: "Add_Price" },
+        // { text: "Price", callback_data: "Add_Price" },
     ]]
-    if (item?.address && item?.price) content.push([
+    // if (item?.address && item?.price) content.push([
+    if (item?.address) content.push([
         { text: "Add to list", callback_data: "Temp_To_List" },
     ])
 
@@ -38,14 +40,15 @@ export const getProfitMaxTempItem = async (key: string) => {
 export const addTempToList = async (userId: string) => {
     const data = await readDataJson()
     const tempItem = data[userId]['tempProfitMaxiModeItem']
-    if (tempItem.address && tempItem.name && tempItem.symbol && tempItem.price) {
+    // if (tempItem.address && tempItem.name && tempItem.symbol && tempItem.price) {
+    if (tempItem.address && tempItem.name && tempItem.symbol) {
         const isDuplicate = data[userId]["profitMaxList"].some((item: any) => item.address === tempItem.address);
         if (isDuplicate) {
             return { success: false, message: `Address <code>${tempItem.address}</code> already exists.` };
         }
         data[userId]['tempProfitMaxiModeItem'] = {}
         data[userId]["profitMaxList"].push(tempItem)
-        await runProfitMaxiMode(tempItem.address, tempItem.price)
+        await runProfitMaxiMode(tempItem.address)
         fs.writeFileSync("data.json", JSON.stringify(data, null, 2), "utf8");
         return { success: true, message: `Sucessfully added.` };
     } else {
