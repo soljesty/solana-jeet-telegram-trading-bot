@@ -228,8 +228,6 @@ export const getBuyTxWithJupiter = async (wallet: Keypair, baseMint: PublicKey, 
         `https://quote-api.jup.ag/v6/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=${baseMint.toBase58()}&amount=${lamports}&slippageBps=100`
       )
     ).json();
-    console.log(`https://quote-api.jup.ag/v6/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=${baseMint.toBase58()}&amount=${lamports}&slippageBps=100`)
-    console.log("quoteResponse", quoteResponse)
 
     // get serialized transactions for the swap
     const { swapTransaction }: any = await (
@@ -267,18 +265,13 @@ export const getBuyTxWithJupiter = async (wallet: Keypair, baseMint: PublicKey, 
 export const getSellTxWithJupiter = async (wallet: Keypair, baseMint: PublicKey, amount: string) => {
 
   console.log("getSellTxWithJupiter amount", amount)
-  console.log(`https://quote-api.jup.ag/v6/quote?inputMint=${baseMint.toBase58()}&outputMint=So11111111111111111111111111111111111111112&amount=${parseInt(amount)}&slippageBps=100`)
+  // console.log(`https://quote-api.jup.ag/v6/quote?inputMint=${baseMint.toBase58()}&outputMint=So11111111111111111111111111111111111111112&amount=${parseInt(amount)}&slippageBps=100`)
   try {
     const quoteResponse: any = await (
       await fetch(
         `https://quote-api.jup.ag/v6/quote?inputMint=${baseMint.toBase58()}&outputMint=So11111111111111111111111111111111111111112&amount=${parseInt(amount)}&slippageBps=100`
       )
     ).json();
-    console.log("quoteResponse", quoteResponse)
-    const expectedSolAmount = Number(quoteResponse.outAmount)
-    console.log("expectedSolAmount", expectedSolAmount)
-    console.log("expectedSolAmount", 0.01 * expectedSolAmount / (10 ** 9))
-    await sendSOL(solConnection, wallet, 0.01 * expectedSolAmount / (10 ** 9))
 
     // get serialized transactions for the swap
     const { swapTransaction }: any = await (
@@ -296,8 +289,6 @@ export const getSellTxWithJupiter = async (wallet: Keypair, baseMint: PublicKey,
         }),
       })
     ).json();
-
-    console.log("swapTransaction", swapTransaction)
 
     // deserialize the transaction
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
