@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { Connection } from '@solana/web3.js';
 import dotenv from 'dotenv';
 import dataJson from '../data.json';
@@ -8,10 +7,10 @@ export const TELEGRAM_ACCESS_TOKEN: string = process.env.TELEGRAM_ACCESS_TOKEN ?
 
 export const CLUSTER: string = 'mainnet';
 
-export const RPC_MAINNET_URL = "https://mainnet.helius-rpc.com?api-key=b84670b2-0b9f-4259-9bb5-bb1aded817df";
+export const RPC_MAINNET_URL = process.env.RPC_MAINNET_URL ? process.env.RPC_MAINNET_URL: "";
 export const RPC_DEVNET_URL = 'https://api.devnet.solana.com';
 
-export const RPC_WEBSOCKET_URL = "wss://mainnet.helius-rpc.com?api-key=b84670b2-0b9f-4259-9bb5-bb1aded817df";
+export const RPC_WEBSOCKET_URL = process.env.RPC_WEBSOCKET_URL ? process.env.RPC_WEBSOCKET_URL: "";
 
 // Solana connection without the 'wss' option
 export const solConnection = new Connection(RPC_MAINNET_URL); // Remove 'wss'
