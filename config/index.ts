@@ -6,59 +6,18 @@ dotenv.config()
 
 export const TELEGRAM_ACCESS_TOKEN: string = process.env.TELEGRAM_ACCESS_TOKEN ? process.env.TELEGRAM_ACCESS_TOKEN: "";
 
-export const MONGO_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
-
 export const CLUSTER: string = 'mainnet';
 
-export const RPC_MAINNET_URL = process.env.RPC_MAINNET_URL ? process.env.RPC_MAINNET_URL : "";
+export const RPC_MAINNET_URL = "https://mainnet.helius-rpc.com?api-key=b84670b2-0b9f-4259-9bb5-bb1aded817df";
 export const RPC_DEVNET_URL = 'https://api.devnet.solana.com';
 
-export const RPC_WEBSOCKET_URL = process.env.RPC_WEBSOCKET_URL ? process.env.RPC_WEBSOCKET_URL : "";
+export const RPC_WEBSOCKET_URL = "wss://mainnet.helius-rpc.com?api-key=b84670b2-0b9f-4259-9bb5-bb1aded817df";
 
 // Solana connection without the 'wss' option
 export const solConnection = new Connection(RPC_MAINNET_URL); // Remove 'wss'
 
 // BOT_NAME
 export const BOT_NAME = "JeetBot"; // Hardcoded BOT_NAME
-
-// Database connection logic
-export const connectDb = async () => {
-  let isConnected = false;
-
-  const connect = async () => {
-    try {
-      if (MONGO_URL) {
-        // Connect to MongoDB
-        mongoose.connect(MONGO_URL)
-          .then((connection) => console.log(`MONGODB CONNECTED: ${MONGO_URL}  ${connection.connection.host}`))
-          .catch(err => console.error('MongoDB connection error:', err));
-
-        isConnected = true;
-      } else {
-        console.log('No Mongo URL');
-      }
-    } catch (error) {
-      console.log(`Error: ${(error as Error).message}`);
-      isConnected = false;
-      // Attempt to reconnect
-      setTimeout(connect, 1000); // Retry connection after 1 second
-    }
-  };
-
-  connect();
-
-  mongoose.connection.on('disconnected', () => {
-    console.log('MONGODB DISCONNECTED');
-    isConnected = false;
-    // Attempt to reconnect
-    setTimeout(connect, 1000); // Retry connection after 5 seconds
-  });
-
-  mongoose.connection.on('reconnected', () => {
-    console.log('MONGODB RECONNECTED');
-    isConnected = true;
-  });
-};
 
 // Other constants
 export const UserCache = dataJson;

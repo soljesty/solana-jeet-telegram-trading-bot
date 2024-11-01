@@ -7,7 +7,6 @@ export const generateWalletCommands = async () => {
   let title: string;
 
   const secretKey = SECRET_KEY
-  console.log("secretKey")
   const kp: any = Keypair.fromSecretKey(base58.decode(secretKey))
   const pub_key = kp.publicKey.toBase58()
  

@@ -1,12 +1,18 @@
 {
   "5807344963": {
-    "activeBuyMint": "DKQpAd288VT4pLS4qiZvoqHqRgqm72PTfxBCwahjpump",
-    "activeSellMint": "5osWwtV3BTfTAW5kkWhkvMsHVmYAsNy9zVkffyiGh5GF",
+    "activeBuyMint": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+    "activeSellMint": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
     "buySlippage": 0,
     "sellSlippage": 0,
-    "profitMaxList": [],
+    "profitMaxList": [
+      {
+        "address": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+        "name": "Goatseus Maximus",
+        "symbol": "GOAT"
+      }
+    ],
     "tempProfitMaxiModeItem": {},
-    "activeSellSwapPercent": 50,
-    "activeBuySwapSolAmount": 0.01
+    "activeSellSwapPercent": 100,
+    "activeBuySwapSolAmount": 0.1
   }
 }

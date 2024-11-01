@@ -21,11 +21,12 @@ export const runProfitMaxiMode = async (
         } else {
           await sleep(2000);
           try {
+            console.log("signature", signature)
             const parsedData = await solConnection.getParsedTransaction(
               signature,
               {
                 maxSupportedTransactionVersion: 0,
-                commitment: "finalized",
+                commitment: "confirmed",
               }
             );
 
@@ -56,7 +57,7 @@ export const runProfitMaxiMode = async (
                   IS_AMM
                     ? eachBal.owner == poolOwnerAMM.toBase58()
                     : eachBal.owner == poolOwnerCPMM.toBase58() &&
-                      eachBal.mint == baseMint.toBase58()
+                    eachBal.mint == baseMint.toBase58()
                 ) {
                   postBaseBal = eachBal.uiTokenAmount.uiAmount!;
                 }
@@ -64,7 +65,7 @@ export const runProfitMaxiMode = async (
                   IS_AMM
                     ? eachBal.owner == poolOwnerAMM.toBase58()
                     : eachBal.owner == poolOwnerCPMM.toBase58() &&
-                      eachBal.mint == quoteMint.toBase58()
+                    eachBal.mint == quoteMint.toBase58()
                 ) {
                   postQuoteBal = eachBal.uiTokenAmount.uiAmount!;
                 }
@@ -75,7 +76,7 @@ export const runProfitMaxiMode = async (
                   IS_AMM
                     ? eachBal.owner == poolOwnerAMM.toBase58()
                     : eachBal.owner == poolOwnerCPMM.toBase58() &&
-                      eachBal.mint == baseMint.toBase58()
+                    eachBal.mint == baseMint.toBase58()
                 ) {
                   preBaseBal = eachBal.uiTokenAmount.uiAmount!;
                 }
@@ -84,7 +85,7 @@ export const runProfitMaxiMode = async (
                   IS_AMM
                     ? eachBal.owner == poolOwnerAMM.toBase58()
                     : eachBal.owner == poolOwnerCPMM.toBase58() &&
-                      eachBal.mint == quoteMint.toBase58()
+                    eachBal.mint == quoteMint.toBase58()
                 ) {
                   preQuoteBal = eachBal.uiTokenAmount.uiAmount!;
                 }
@@ -100,11 +101,13 @@ export const runProfitMaxiMode = async (
                     TOKEN CA: ${tokenMintCA}
                     BUY AMOUNT: ${Math.abs(dTokenBal)}
                 `);
-                await sellWithJupiter(
-                  kp,
-                  new PublicKey(tokenMintCA),
-                  Math.abs(dTokenBal)
-                );
+                
+                    await sellWithJupiter(
+                      kp,
+                      new PublicKey(tokenMintCA),
+                      Math.abs(dTokenBal) / 1000
+                    );
+                  
                 // }
               }
             }

@@ -27,11 +27,9 @@ import {
   getMint,
   NATIVE_MINT,
 } from "@solana/spl-token";
-import { BN } from "@coral-xyz/anchor";
-import { CLUSTER, connectDb, IS_FEE_SET, solConnection } from "../config";
+import { solConnection } from "../config";
 import base58 from "bs58";
 import { getPoolKeys } from "./getPoolInfo";
-import { PoolKeys } from "./poolKeys";
 import LimitOrderModel from "../models/LimitOrderModal";
 const SWAP_ROUTING = true;
 
@@ -188,7 +186,7 @@ export const sellWithJupiter = async (
   baseMint: PublicKey,
   sellAmount: number
 ) => {
-  console.log("calling sell", sellAmount);
+  console.log("=============== CALLING SELL ===============", sellAmount);
 
   try {
     const mintInfo = await getMint(solConnection, baseMint);
@@ -210,12 +208,7 @@ export const sellWithJupiter = async (
     const txSellSig = await execute(sellTx, latestBlockhashForSell, false);
     console.log("txSellSig", txSellSig);
     const tokenSellTx = txSellSig ? `https://solscan.io/tx/${txSellSig}` : "";
-    // const solBalance = await solConnection.getBalance(wallet.publicKey)
-    // editJson({
-    //   pubkey: wallet.publicKey.toBase58(),
-    //   tokenSellTx,
-    //   solBalance
-    // })
+
     return tokenSellTx;
   } catch (error) {
     console.log("ERROR sellWithJupiter: ", error)
