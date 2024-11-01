@@ -5,11 +5,6 @@
     "buySlippage": 0,
     "sellSlippage": 0,
     "profitMaxList": [
-      {
-        "address": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
-        "name": "Goatseus Maximus",
-        "symbol": "GOAT"
-      }
     ],
     "tempProfitMaxiModeItem": {},
     "activeSellSwapPercent": 100,
