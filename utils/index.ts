@@ -240,7 +240,6 @@ export const convertToMilliseconds = (input: string) => {
 
 export const execute = async (
   transaction: VersionedTransaction,
-  latestBlockhash: Blockhash,
   isBuy: boolean = true
 ) => {
   console.log("executing...");
@@ -251,8 +250,8 @@ export const execute = async (
   console.log("executing signature===>", signature);
   const confirmation = await solConnection.confirmTransaction({
     signature,
-    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    blockhash: latestBlockhash.blockhash,
+    lastValidBlockHeight: (await solConnection.getLatestBlockhash()).lastValidBlockHeight,
+    blockhash: (await solConnection.getLatestBlockhash()).blockhash,
   });
 
   if (confirmation.value.err) {

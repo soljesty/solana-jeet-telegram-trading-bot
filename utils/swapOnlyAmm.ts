@@ -32,8 +32,6 @@ import { solConnection } from '../config';
 import { sendSOL } from '.';
 
 
-const TX_FEE = 10;
-
 type WalletTokenAccounts = Awaited<ReturnType<typeof getWalletTokenAccount>>
 type TestTxInputInfo = {
   outputToken: Token

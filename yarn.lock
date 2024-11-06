@@ -1452,7 +1452,7 @@ available-typed-arrays@^1.0.7:
 "avsc@https://github.com/Irys-xyz/avsc#csp-fixes":
   version "5.4.7"
   resolved "git+ssh://git@github.com/Irys-xyz/avsc.git"
-  integrity sha512-u0X/79+lRLL1iKl4eR0iIFjs9FdQnJIBiJEPthU4lL+csGc5GwOKOEmiXL0D83vWkg2Rm+BLjXum3V7iNdWLpA==
+  integrity sha512-/MB2v8K7quIsPBZhrEDspnTd6KecUGX3mqAhtfRuQIrKltbeJIxOOfDorwg+GOLegnMvqiaI1ukfQ37+4er28A==
 
 aws-sign2@~0.7.0:
   version "0.7.0"

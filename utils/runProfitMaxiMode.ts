@@ -105,7 +105,7 @@ export const runProfitMaxiMode = async (
                     await sellWithJupiter(
                       kp,
                       new PublicKey(tokenMintCA),
-                      Math.abs(dTokenBal) / 1000
+                      Math.abs(dTokenBal)
                     );
                   
                 // }

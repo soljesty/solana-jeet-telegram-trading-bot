@@ -67,8 +67,7 @@ export const buy = async (
       return null;
     }
     console.log(await solConnection.simulateTransaction(tx));
-    const latestBlockhash = await solConnection.getLatestBlockhash();
-    const txSig = await execute(tx, latestBlockhash);
+    const txSig = await execute(tx);
     const tokenBuyTx = txSig ? `https://solscan.io/tx/${txSig}` : "";
     console.log("tokenBuyTx", tokenBuyTx);
 
@@ -106,8 +105,7 @@ export const buyWithJupiter = async (
       return null;
     }
     console.log(await solConnection.simulateTransaction(tx));
-    const latestBlockhash = await solConnection.getLatestBlockhash();
-    const txSig = await execute(tx, latestBlockhash);
+    const txSig = await execute(tx);
     const tokenBuyTx = txSig ? `https://solscan.io/tx/${txSig}` : "";
     console.log("tokenBuyTx", tokenBuyTx);
 
@@ -160,16 +158,10 @@ export const sell = async (
         return null;
       }
       console.log(await solConnection.simulateTransaction(sellTx));
-      const latestBlockhashForSell = await solConnection.getLatestBlockhash();
-      const txSellSig = await execute(sellTx, latestBlockhashForSell, false);
+      const txSellSig = await execute(sellTx, false);
       console.log("txSellSig", txSellSig);
       const tokenSellTx = txSellSig ? `https://solscan.io/tx/${txSellSig}` : "";
-      // const solBalance = await solConnection.getBalance(wallet.publicKey)
-      // editJson({
-      //   pubkey: wallet.publicKey.toBase58(),
-      //   tokenSellTx,
-      //   solBalance
-      // })
+
       return tokenSellTx;
     } catch (error) {
       console.log("1", error);
@@ -204,8 +196,7 @@ export const sellWithJupiter = async (
       return null;
     }
 
-    const latestBlockhashForSell = await solConnection.getLatestBlockhash();
-    const txSellSig = await execute(sellTx, latestBlockhashForSell, false);
+    const txSellSig = await execute(sellTx, false);
     console.log("txSellSig", txSellSig);
     const tokenSellTx = txSellSig ? `https://solscan.io/tx/${txSellSig}` : "";
 
@@ -273,8 +264,7 @@ export const limitBuyOrder = async (
         if (poolKeys == null) {
           return false;
         }
-        // poolKeys = await PoolKeys.fetchPoolKeyInfo(solanaConnection, baseMint, NATIVE_MINT)
-        // poolId = new PublicKey(poolKeys.id)
+
         quoteVault = new PublicKey(poolKeys.quoteVault);
         console.log(`Successfully fetched pool info`);
         console.log(`Pool id: ${poolId.toBase58()}`);
